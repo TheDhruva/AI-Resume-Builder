@@ -1,0 +1,30 @@
+# React Framework
+react
+react-dom
+react-router-dom
+
+# Convex Backend
+convex
+
+# Clerk Authentication
+@clerk/clerk-react
+
+# UI + Styling
+tailwindcss
+postcss
+autoprefixer
+lucide-react
+sonner
+clsx
+
+# ShadCN UI Components (Radix UI)
+@radix-ui/react-alert-dialog
+@radix-ui/react-dropdown-menu
+@radix-ui/react-dialog
+@radix-ui/react-popover
+
+# Icons / Utils
+react-web-share
+
+# Rich Text Editor (your custom one or add if using Quill)
+react-quill
