@@ -1,0 +1,148 @@
+/* ✅ Core Tailwind Imports */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Dark variant */
+@custom-variant dark (&:is(.dark *));
+
+/* =====================
+   🖨 PRINT
+===================== */
+@media print {
+  #no-print { display: none; }
+  #print-area { display: block; }
+  body { margin: 0; padding: 0; }
+}
+
+@page { size: auto; margin: 0mm; }
+
+/* Editor lists */
+.rsw-ce ul { list-style: disc; padding-left: 2em; }
+.rsw-ce ol { list-style: decimal; padding-left: 2em; }
+
+/* =====================================================
+   🎨 THEME VARIABLES — UPGRADED (Better Depth & Contrast)
+===================================================== */
+:root {
+  --radius: 0.625rem;
+
+  /* Base palette */
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.16 0 0);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0 0);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0 0);
+
+  --primary: oklch(0.28 0.03 260);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.22 0 0);
+
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.58 0 0);
+
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.22 0 0);
+
+  --destructive: oklch(0.63 0.22 25);
+
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.72 0 0);
+
+  /* NEW Depth + Glow Vars */
+  --shadow-soft: 0 4px 20px oklch(0 0 0 / 0.04);
+  --shadow-medium: 0 8px 32px oklch(0 0 0 / 0.08);
+  --glass-bg: oklch(1 0 0 / 0.7);
+  --glass-border: oklch(0 0 0 / 0.05);
+
+  /* Sidebar palette */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.16 0 0);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-border: var(--border);
+}
+
+/* =====================
+   🌙 DARK MODE — More Premium
+===================== */
+.dark {
+  --background: oklch(0.17 0 0);
+  --foreground: oklch(0.98 0 0);
+
+  --card: oklch(0.22 0 0);
+  --card-foreground: oklch(0.98 0 0);
+
+  --popover: oklch(0.22 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+
+  --primary: oklch(0.78 0.04 260);
+  --primary-foreground: oklch(0.16 0 0);
+
+  --secondary: oklch(0.30 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+
+  --muted: oklch(0.30 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+
+  --accent: oklch(0.30 0 0);
+  --accent-foreground: oklch(0.98 0 0);
+
+  --border: oklch(1 0 0 / 0.09);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.62 0 0);
+
+  --shadow-soft: 0 4px 22px oklch(0 0 0 / 0.2);
+  --shadow-medium: 0 8px 40px oklch(0 0 0 / 0.32);
+  --glass-bg: oklch(0.17 0 0 / 0.55);
+  --glass-border: oklch(1 0 0 / 0.06);
+}
+
+/* =====================
+   🧱 BASE STYLING
+===================== */
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in oklch, var(--ring) 50%, transparent);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    @apply min-h-screen font-sans antialiased;
+  }
+
+  /* NEW subtle transitions for smoother UX */
+  body, button, input, a, div {
+    transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+  }
+}
+
+/* =====================
+   ✨ Utility Enhancements
+===================== */
+
+/* Glass effect utility */
+.glass {
+  backdrop-filter: blur(12px);
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Subtle hover-lift */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Smooth card transitions */
+.card-smooth {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
