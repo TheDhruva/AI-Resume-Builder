@@ -12,7 +12,7 @@ function PersonalDetailPreview({ resumeInfo }) {
         className="font-bold text-xl text-center"
         style={{ color: themeColor }}
       >
-        {resumeInfo?.personalDetails?.firstName || "First Name"} {resumeInfo?.lastName || "Last Name"}
+        {resumeInfo?.personalDetails?.firstName || "First Name"} {resumeInfo?.personalDetails?.lastName || "Last Name"}
       </h2>
 
       {/* ✅ Job Title */}

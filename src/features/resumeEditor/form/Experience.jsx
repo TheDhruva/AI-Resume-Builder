@@ -23,7 +23,11 @@ function Experience() {
   const updateResumeInfo = useMutation(api.resumes.updateResumeInfo);
   const { id: resumeId } = useParams();
 
-  // Load experience from DB or default
+  const themeColor =
+    resumeInfo?.resumeInfo?.themeColor ||
+    resumeInfo?.themeColor ||
+    "#000000";
+
   const [experienceList, setExperienceList] = useState(() => {
     return (
       resumeInfo?.resumeInfo?.experience ||
@@ -32,7 +36,6 @@ function Experience() {
     );
   });
 
-  // Sync with context if resumeInfo changes (e.g., fresh load from DB)
   useEffect(() => {
     const loaded =
       resumeInfo?.resumeInfo?.experience ||
@@ -44,7 +47,6 @@ function Experience() {
     }
   }, [resumeInfo]);
 
-  // Live Preview Sync
   useEffect(() => {
     setResumeInfo((prev) => ({
       ...prev,
@@ -55,9 +57,6 @@ function Experience() {
     }));
   }, [experienceList]);
 
-  // ----------------------------
-  // SAVE TO DB
-  // ----------------------------
   const onSave = async () => {
     try {
       await updateResumeInfo({
@@ -76,7 +75,6 @@ function Experience() {
     }
   };
 
-  // INPUT HANDLERS
   const handleChange = (index, event) => {
     const { name, value } = event.target;
 
@@ -95,7 +93,6 @@ function Experience() {
     });
   };
 
-  // ADD / REMOVE
   const AddNewExperience = () => {
     setExperienceList((prev) => [...prev, { ...emptyExperience }]);
   };
@@ -111,13 +108,24 @@ function Experience() {
   };
 
   return (
-    <div className="p-5 shadow-lg rounded-lg border-t-4 border-primary mt-4">
-      <h2 className="font-bold text-lg mb-1">Professional Experience</h2>
+    <div
+      className="p-5 shadow-lg rounded-lg mt-4"
+      style={{ borderTop: `4px solid ${themeColor}` }}
+    >
+      <h2
+        className="font-bold text-lg mb-1"
+        style={{ color: themeColor }}
+      >
+        Professional Experience
+      </h2>
 
       {experienceList.map((item, index) => (
         <div
           key={index}
-          className="grid grid-cols-2 gap-3 p-4 mb-5 border rounded bg-gray-50"
+          className="grid grid-cols-2 gap-3 p-4 mb-5 rounded bg-gray-50"
+          style={{
+            borderLeft: `3px solid ${themeColor}`,
+          }}
         >
           <InputField
             label="Position Title"
