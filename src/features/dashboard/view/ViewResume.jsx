@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 import ResumePreview from "../../resumeEditor/ResumePreview";
 import { ResumeInfoContext } from "../../resumeEditor/ResumeInfoContext";
-import Header from "@/components/custom/Header";
+import Header from "@/features/home/Header";
 
 function ViewResume() {
   const { id } = useParams(); // dynamic route param

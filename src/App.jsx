@@ -3,7 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import "./App.css";
 
 import { useUser } from "@clerk/clerk-react";
-import Header from "@/components/custom/Header.jsx";
+import Header from "@/features/home/Header.jsx";
 import { Toaster } from "sonner";
 
 function App() {

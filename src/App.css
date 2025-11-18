@@ -3,10 +3,7 @@
 ============================= */
 #root {
   min-height: 100vh;
-  margin: 0 auto;
-  padding: 1rem;
 
-  /* Dynamically linked to your theme vars */
   background-color: var(--background);
   color: var(--foreground);
 
@@ -22,6 +19,7 @@
 * {
   box-sizing: border-box;
   scroll-behavior: smooth;
+  border-color: var(--border);
 }
 
 a {
@@ -36,20 +34,20 @@ a:hover {
 }
 
 /* =============================
-   🖱 Modern Scrollbar
+   🖱 Modern Scrollbar (Navy Themed)
 ============================= */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--foreground) 12%, transparent);
+  background: color-mix(in oklch, var(--primary) 45%, transparent);
   border-radius: 8px;
   transition: background-color 0.25s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in oklch, var(--foreground) 25%, transparent);
+  background: color-mix(in oklch, var(--primary) 70%, transparent);
 }
 
 /* =============================
@@ -60,7 +58,6 @@ a:hover {
   margin: 0 auto;
   padding: 1rem;
 
-  /* Soft UI elevation */
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -74,17 +71,53 @@ a:hover {
 ============================= */
 button,
 input,
-textarea {
+textarea,
+select {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: var(--input);
+  color: var(--foreground);
   transition: all 0.2s ease-in-out;
 }
 
+/* Focus + hover elevation */
 button:hover,
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
   box-shadow: var(--shadow-medium);
 }
 
-/* Soft hover for buttons */
-button:hover {
+/* Primary Navy Button Variant */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 999px;
+  padding: 0.65rem 1.35rem;
+  font-weight: 600;
+  transition: background-color 0.25s, transform 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: color-mix(in oklch, var(--primary) 85%, black);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* Secondary Outline Variant */
+.btn-outline {
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.55rem 1.25rem;
+  font-weight: 500;
+}
+
+.btn-outline:hover {
+  background-color: color-mix(in oklch, var(--primary) 10%, transparent);
   transform: translateY(-1px);
 }

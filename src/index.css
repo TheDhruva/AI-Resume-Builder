@@ -1,148 +1,166 @@
-/* ✅ Core Tailwind Imports */
+/* =============================
+   ✅ Tailwind Base Imports
+============================= */
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark variant */
+/* Dark mode variant helper */
 @custom-variant dark (&:is(.dark *));
 
-/* =====================
-   🖨 PRINT
-===================== */
-@media print {
-  #no-print { display: none; }
-  #print-area { display: block; }
-  body { margin: 0; padding: 0; }
-}
-
-@page { size: auto; margin: 0mm; }
-
-/* Editor lists */
-.rsw-ce ul { list-style: disc; padding-left: 2em; }
-.rsw-ce ol { list-style: decimal; padding-left: 2em; }
-
-/* =====================================================
-   🎨 THEME VARIABLES — UPGRADED (Better Depth & Contrast)
-===================================================== */
+/* =============================
+   🎨 THEME VARIABLES
+   Navy Blue + Creamy White
+============================= */
 :root {
   --radius: 0.625rem;
 
   /* Base palette */
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.16 0 0);
+  --background: oklch(0.98 0.01 90);         /* Creamy White */
+  --foreground: oklch(0.25 0.05 260);        /* Navy Text */
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.16 0 0);
+  --card: oklch(0.985 0.01 90);
+  --card-foreground: var(--foreground);
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.16 0 0);
+  --primary: oklch(0.28 0.05 260);           /* Deep Navy Blue */
+  --primary-foreground: oklch(0.99 0 0);     /* White */
 
-  --primary: oklch(0.28 0.03 260);
-  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 90);
+  --secondary-foreground: var(--foreground);
 
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.22 0 0);
+  --muted: oklch(0.94 0.01 90);
+  --muted-foreground: oklch(0.45 0.02 260);
 
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.58 0 0);
+  --border: oklch(0.88 0.005 90);
+  --input: var(--border);
+  --ring: oklch(0.52 0.03 260);
 
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.22 0 0);
+  --shadow-soft: 0 4px 20px oklch(0 0 0 / 0.05);
+  --shadow-medium: 0 8px 28px oklch(0 0 0 / 0.10);
 
-  --destructive: oklch(0.63 0.22 25);
-
-  --border: oklch(0.92 0 0);
-  --input: oklch(0.92 0 0);
-  --ring: oklch(0.72 0 0);
-
-  /* NEW Depth + Glow Vars */
-  --shadow-soft: 0 4px 20px oklch(0 0 0 / 0.04);
-  --shadow-medium: 0 8px 32px oklch(0 0 0 / 0.08);
-  --glass-bg: oklch(1 0 0 / 0.7);
-  --glass-border: oklch(0 0 0 / 0.05);
-
-  /* Sidebar palette */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.16 0 0);
+  /* Sidebar */
+  --sidebar: oklch(0.97 0.01 90);
+  --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-border: var(--border);
 }
 
-/* =====================
-   🌙 DARK MODE — More Premium
-===================== */
+/* =============================
+   🌙 DARK MODE
+============================= */
 .dark {
-  --background: oklch(0.17 0 0);
-  --foreground: oklch(0.98 0 0);
+  --background: oklch(0.22 0.04 260);        /* Navy */
+  --foreground: oklch(0.97 0.01 90);         /* Creamy Text */
 
-  --card: oklch(0.22 0 0);
-  --card-foreground: oklch(0.98 0 0);
-
-  --popover: oklch(0.22 0 0);
-  --popover-foreground: oklch(0.98 0 0);
+  --card: oklch(0.26 0.04 260);
+  --card-foreground: var(--foreground);
 
   --primary: oklch(0.78 0.04 260);
-  --primary-foreground: oklch(0.16 0 0);
-
-  --secondary: oklch(0.30 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-
-  --muted: oklch(0.30 0 0);
-  --muted-foreground: oklch(0.72 0 0);
-
-  --accent: oklch(0.30 0 0);
-  --accent-foreground: oklch(0.98 0 0);
-
-  --border: oklch(1 0 0 / 0.09);
-  --input: oklch(1 0 0 / 0.12);
-  --ring: oklch(0.62 0 0);
-
-  --shadow-soft: 0 4px 22px oklch(0 0 0 / 0.2);
-  --shadow-medium: 0 8px 40px oklch(0 0 0 / 0.32);
-  --glass-bg: oklch(0.17 0 0 / 0.55);
-  --glass-border: oklch(1 0 0 / 0.06);
+  --primary-foreground: oklch(0.16 0.01 260);
 }
 
-/* =====================
-   🧱 BASE STYLING
-===================== */
-@layer base {
-  * {
-    border-color: var(--border);
-    outline-color: color-mix(in oklch, var(--ring) 50%, transparent);
-  }
+/* =============================
+   🌐 Root Layout Container
+============================= */
+#root {
+  min-height: 100vh;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
 
-  body {
-    background: var(--background);
-    color: var(--foreground);
-    @apply min-h-screen font-sans antialiased;
-  }
-
-  /* NEW subtle transitions for smoother UX */
-  body, button, input, a, div {
-    transition: background-color 0.25s, color 0.25s, border-color 0.25s;
-  }
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* =====================
-   ✨ Utility Enhancements
-===================== */
+/* =============================
+   🧩 Global Utility Defaults
+============================= */
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  border-color: var(--border);
+}
 
-/* Glass effect utility */
-.glass {
-  backdrop-filter: blur(12px);
-  background-color: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* =============================
+   🖱 Modern Navy Scrollbar
+============================= */
+::-webkit-scrollbar { width: 8px; }
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--primary) 45%, transparent);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--primary) 75%, transparent);
+}
+
+/* =============================
+   🗂 Glass/Container Defaults
+============================= */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
 }
 
-/* Subtle hover-lift */
-.hover-lift:hover {
-  transform: translateY(-2px);
+/* =============================
+   🎛 Inputs + Buttons
+============================= */
+button,
+input,
+textarea,
+select {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: var(--input);
+  color: var(--foreground);
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover,
+input:focus,
+textarea:focus,
+select:focus {
   box-shadow: var(--shadow-medium);
 }
 
-/* Smooth card transitions */
-.card-smooth {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* PRIMARY NAVY BUTTON */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 999px;
+  padding: 0.65rem 1.35rem;
+  font-weight: 600;
+  transition: background-color 0.25s, transform 0.2s;
+}
+.btn-primary:hover {
+  background-color: color-mix(in oklch, var(--primary) 85%, black);
+  transform: translateY(-2px);
+}
+.btn-primary:active { transform: scale(0.97); }
+
+/* OUTLINE SECONDARY */
+.btn-outline {
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: 999px;
+  padding: 0.55rem 1.25rem;
+  font-weight: 500;
+}
+.btn-outline:hover {
+  background-color: color-mix(in oklch, var(--primary) 10%, transparent);
+  transform: translateY(-1px);
 }
