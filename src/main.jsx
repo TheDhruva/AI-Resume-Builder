@@ -24,38 +24,54 @@ import ViewResume from "./features/dashboard/view/ViewResume.jsx";
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-// Safety check
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Add your Clerk Publishable Key to the .env file");
-}
-
-// -------------------------------
-// ROUTER — FIXED & WORKING 100%
-// -------------------------------
+// Router
 const router = createBrowserRouter([
+  { path: "/auth/sign-in", element: <SignInPage /> },
   {
-    element: <App />, // layout wrapper
+    element: <App />, // global layout wrapper for authenticated pages
     children: [
+      { path: "/", element: <Home /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/dashboard/resume/:id", element: <EditResume /> },
-      { path: "/dashboard/resume/:id/view", element: <ViewResume /> }, // ✅ FIXED
+      { path: "/dashboard/resume/:id/view", element: <ViewResume /> },
     ],
   },
-
-  // Public routes (outside layout)
-  { path: "/", element: <Home /> },
-  { path: "/auth/sign-in", element: <SignInPage /> },
 ]);
 
-// -------------------------------
-// RENDER APP
-// -------------------------------
+// Environment safety check
+function EnvError() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-brand-bg font-sans">
+      <div className="bg-white shadow-xl rounded-xl p-8 border border-brand-border text-center max-w-lg">
+        <h1 className="text-2xl font-bold text-red-600">
+          Missing Environment Variable
+        </h1>
+
+        <p className="text-brand-muted mt-3">
+          Add <b>VITE_CLERK_PUBLISHABLE_KEY</b> to your <code>.env.local</code>
+        </p>
+
+        <p className="text-sm text-gray-500 mt-2">
+          Check the README for required environment variables.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Render
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <ConvexProvider client={convex}>
-        <RouterProvider router={router} />
-      </ConvexProvider>
-    </ClerkProvider>
+    {PUBLISHABLE_KEY ? (
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <ConvexProvider client={convex}>
+          <div className="min-h-screen bg-brand-bg font-sans text-brand-text">
+            <RouterProvider router={router} />
+          </div>
+        </ConvexProvider>
+      </ClerkProvider>
+    ) : (
+      <EnvError />
+    )}
   </StrictMode>
 );

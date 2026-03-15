@@ -1,63 +1,93 @@
-import Header from "@/features/home/Header";
 import { AtomIcon, Edit, Share2 } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 function Home() {
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <Header />
+    <div className="min-h-screen bg-brand-bg text-brand-text">
 
-      <main className="px-4 mx-auto max-w-5xl text-center">
+      <main className="max-w-6xl mx-auto px-4 text-center">
 
-        {/* Hero */}
-        <section className="py-10">
-          <div className="inline-flex items-center px-3 py-1.5 mb-5 text-xs font-medium bg-primary text-primary-foreground rounded-full">
-            Built by Anurag — AI Resume Tools
+        {/* ---------- HERO SECTION ---------- */}
+        <section>
+
+          <div className="inline-flex items-center px-4 py-1.5 mb-6 text-xs font-medium bg-brand-primary text-white rounded-full">
+            Built by The Dhruva — AI Resume Tools
           </div>
 
-          <h1 className="mb-3 text-3xl font-extrabold tracking-tight md:text-4xl">
-            Build Your Resume <span className="text-primary">With AI</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+            Build Your Resume <span className="text-brand-primary">With AI</span>
           </h1>
 
-          <p className="mb-6 text-sm text-muted-foreground max-w-2xl mx-auto">
-            Create a sharp, professional resume in minutes — powered by AI, refined by you.
+          <p className="text-lg text-brand-muted max-w-2xl mx-auto mb-8">
+            Create a sharp, professional resume in minutes — powered by AI,
+            refined by you.
           </p>
 
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center px-7 py-3 text-sm font-semibold 
-                rounded-full bg-foreground text-primary-foreground shadow-sm
-                hover:bg-primary/90 active:scale-[0.98] transition"
-          >
-            Get Started
+          <Link to="/dashboard">
+            <Button
+              size="lg"
+              className="rounded-full bg-brand-primary hover:bg-brand-hover text-white shadow-md"
+            >
+              Get Started
+            </Button>
           </Link>
+
         </section>
 
-        {/* Steps */}
-        <section className="pb-3 pt-15">
-          <h2 className="text-xl font-bold mb-1">How It Works</h2>
-          <p className="text-sm text-muted-foreground">3 simple steps</p>
+        {/* ---------- HOW IT WORKS ---------- */}
+        <section className="border-t border-brand-border pt-14 ">
 
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <h2 className="text-2xl font-bold mb-2">How It Works</h2>
+
+          <p className="text-brand-muted mb-10">
+            Create your resume in three simple steps
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
             {[
-              { icon: AtomIcon, title: "Enter Details", text: "Add your experience & info." },
-              { icon: Edit, title: "Refine & Personalize", text: "Edit sections visually." },
-              { icon: Share2, title: "Export & Share", text: "Download PDF instantly." }
+              {
+                icon: AtomIcon,
+                title: "Enter Details",
+                text: "Add your experience, skills, and personal information.",
+              },
+              {
+                icon: Edit,
+                title: "Refine & Personalize",
+                text: "Edit resume sections visually with AI assistance.",
+              },
+              {
+                icon: Share2,
+                title: "Export & Share",
+                text: "Download your resume as a professional PDF instantly.",
+              },
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="rounded-lg border border-border bg-card p-5 shadow-sm hover:shadow-md transition"
+                className="bg-white border border-brand-border rounded-xl p-6 shadow-sm hover:shadow-md transition-all"
               >
-                <item.icon className="h-6 w-6 mb-3 text-primary mx-auto" />
-                <h3 className="font-semibold text-sm">{item.title}</h3>
-                <p className="text-xs text-muted-foreground mt-1">{item.text}</p>
+
+                <item.icon className="h-7 w-7 text-brand-primary mx-auto mb-4" />
+
+                <h3 className="font-semibold text-lg mb-1">
+                  {item.title}
+                </h3>
+
+                <p className="text-sm text-brand-muted">
+                  {item.text}
+                </p>
+
               </div>
             ))}
+
           </div>
+
         </section>
 
       </main>
+
     </div>
   );
 }

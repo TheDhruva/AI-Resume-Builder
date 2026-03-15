@@ -19,12 +19,6 @@ function Summary({ enabledNext }) {
   );
   const [loading, setLoading] = useState(false);
   const [aiGeneratedSummaries, setAiGeneratedSummaries] = useState(null);
-  const debounceRef = useRef(null);
-
-  // ✅ Keep summary in sync with context
-  useEffect(() => {
-    setSummary(resumeInfo?.summary ?? resumeInfo?.resumeInfo?.summary ?? "");
-  }, [resumeInfo]);
 
   // ✅ Update context for live preview
   useEffect(() => {
@@ -93,10 +87,10 @@ function Summary({ enabledNext }) {
   };
 
   return (
-    <div className="p-5 shadow-lg rounded-lg border-t-4 border-primary mt-4">
+    <div className="p-6 shadow-sm rounded-xl border-t-4 border-primary border-[1px] border-x-gray-200 border-b-gray-200 bg-white mt-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-bold text-lg text-gray-800">Summary</h2>
+        <h2 className="font-bold text-xl text-gray-900">Summary</h2>
         <Button
           variant="outline"
           onClick={GenerateSummaryFromAI}
@@ -113,7 +107,7 @@ function Summary({ enabledNext }) {
         </Button>
       </div>
 
-      <p className="text-gray-500 mb-4">
+      <p className="text-muted-foreground text-sm mb-6">
         Add a concise 2–4 line professional summary tailored to your target role.
       </p>
 
@@ -124,7 +118,10 @@ function Summary({ enabledNext }) {
           placeholder="Ex: Full-stack developer (React/Node) with 10+ shipped features..."
           required
           value={summary}
-          onChange={(e) => setSummary(e.target.value)}
+          onChange={(e) => {
+            enabledNext && enabledNext(false);
+            setSummary(e.target.value);
+          }}
         />
 
         <div className="mt-3 flex justify-end">
@@ -149,7 +146,10 @@ function Summary({ enabledNext }) {
             <div
               key={index}
               className="mb-4 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-              onClick={() => setSummary(text)}
+              onClick={() => {
+                enabledNext && enabledNext(false);
+                setSummary(text);
+              }}
             >
               <h3 className="font-semibold text-primary">{level}</h3>
               <p className="text-sm text-gray-700">{text}</p>

@@ -8,6 +8,10 @@ convex
 
 # Clerk Authentication
 @clerk/clerk-react
+@clerk/react
+
+# Google AI (Gemini)
+@google/generative-ai
 
 # UI + Styling
 tailwindcss
@@ -16,15 +20,20 @@ autoprefixer
 lucide-react
 sonner
 clsx
+tailwind-merge
+class-variance-authority
+next-themes
+@tailwindcss/vite
 
 # ShadCN UI Components (Radix UI)
 @radix-ui/react-alert-dialog
-@radix-ui/react-dropdown-menu
 @radix-ui/react-dialog
+@radix-ui/react-dropdown-menu
 @radix-ui/react-popover
+@radix-ui/react-slot
 
-# Icons / Utils
-react-web-share
+# Rich Text Editor
+react-simple-wysiwyg
 
-# Rich Text Editor (your custom one or add if using Quill)
-react-quill
+# Utilities
+uuid

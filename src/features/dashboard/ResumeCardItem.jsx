@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Notebook } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api"; // adjust path
+import { api } from "../../../convex/_generated/api";
 
 import {
   DropdownMenu,
@@ -22,9 +22,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-function ResumeCardItem({ resume, refreshData }) {
-  const navigate = useNavigate();
+import { Button } from "@/components/ui/button";
+import Card from "@/components/layout/Card";
 
+function ResumeCardItem({ resume }) {
+  const navigate = useNavigate();
   const deleteResume = useMutation(api.resumes.deleteResume);
 
   const [openAlert, setOpenAlert] = useState(false);
@@ -37,7 +39,6 @@ function ResumeCardItem({ resume, refreshData }) {
   const handleConfirmDelete = async () => {
     try {
       await deleteResume({ resumeId: resume.id });
-      refreshData && refreshData();
       setOpenAlert(false);
     } catch (err) {
       console.error("Delete error:", err);
@@ -45,25 +46,37 @@ function ResumeCardItem({ resume, refreshData }) {
   };
 
   return (
-    <div className="border border-primary rounded-lg p-4 hover:shadow-lg relative">
+    <Card className="flex flex-col overflow-hidden hover:shadow-lg transition-all duration-200 group">
 
+      {/* ---------- CARD PREVIEW ---------- */}
       <div
-        className="p-14 bg-secondary flex items-center justify-center h-[280px] rounded-lg cursor-pointer hover:scale-105 transition-all"
+        className="h-[260px] flex items-center justify-center cursor-pointer
+        bg-brand-bg border-b border-brand-border
+        group-hover:bg-brand-primary/5 transition-colors"
         onClick={handleEdit}
       >
-        <Notebook size={32} />
+        <Notebook
+          size={36}
+          className="text-brand-primary/70 group-hover:text-brand-primary transition"
+        />
       </div>
 
-      <h2 className="text-center my-1 font-semibold">{resume.title}</h2>
+      {/* ---------- CARD FOOTER ---------- */}
+      <div className="flex items-center justify-between p-4 bg-white">
 
-      <div className="flex justify-center mt-2">
+        <h2 className="font-semibold text-brand-text truncate pr-2">
+          {resume.title}
+        </h2>
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="px-3 py-1 border rounded">
-            Open
+
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Options
+            </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent>
+          <DropdownMenuContent align="end">
 
             <DropdownMenuItem onClick={handleEdit}>
               Edit
@@ -78,40 +91,55 @@ function ResumeCardItem({ resume, refreshData }) {
             </DropdownMenuItem>
 
             <DropdownMenuItem
-              className="text-red-500"
+              className="text-error focus:text-error focus:bg-error/10"
               onClick={() => setOpenAlert(true)}
             >
               Delete
             </DropdownMenuItem>
 
           </DropdownMenuContent>
+
         </DropdownMenu>
 
-        {/* Actual working delete dialog */}
-        <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete resume?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-              <AlertDialogAction
-                className="bg-red-600 text-white hover:bg-red-700"
-                onClick={handleConfirmDelete}
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
       </div>
-    </div>
+
+      {/* ---------- DELETE CONFIRM DIALOG ---------- */}
+      <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
+
+        <AlertDialogContent>
+
+          <AlertDialogHeader>
+
+            <AlertDialogTitle>
+              Delete this resume?
+            </AlertDialogTitle>
+
+            <AlertDialogDescription>
+              This will permanently delete the resume and cannot be undone.
+            </AlertDialogDescription>
+
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+
+            <AlertDialogCancel>
+              Cancel
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              className="bg-error text-white hover:bg-error/90"
+              onClick={handleConfirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+
+          </AlertDialogFooter>
+
+        </AlertDialogContent>
+
+      </AlertDialog>
+
+    </Card>
   );
 }
 

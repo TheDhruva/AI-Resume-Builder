@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ResumeInfoContext } from "@/features/resumeEditor/ResumeInfoContext";
 import { Brain, LoaderCircle } from "lucide-react";
 import React, { useContext, useState } from "react";
+
 import {
   BtnBold,
   BtnBulletList,
@@ -21,23 +22,26 @@ import { toast } from "sonner";
 
 const PROMPT = `
 Position Title: {positionTitle}
-Generate 5–7 resume bullet points for this job.
+
+Generate 5–7 professional resume bullet points for this role.
 
 Rules:
-- No experience level
-- No JSON
-- Return ONLY valid HTML (<ul><li>…</li></ul>)
-- Bullets must use action verbs + measurable impact
+- Use action verbs
+- Include measurable impact
+- Do not include experience level
+- Return ONLY valid HTML (<ul><li>...</li></ul>)
 `;
 
 function RichTextEditor({ onRichTextEditorChange, index, defaultValue = "" }) {
-  const [value, setValue] = useState(defaultValue);
+
   const { resumeInfo } = useContext(ResumeInfoContext);
+
+  const [value, setValue] = useState(defaultValue);
   const [loading, setLoading] = useState(false);
 
   const generateAIContent = async () => {
-    const experience =
-      resumeInfo?.resumeInfo?.experience?.[index];  // ✅ FIXED PATH
+
+    const experience = resumeInfo?.experience?.[index];
 
     if (!experience?.title) {
       toast.error("Please fill Position Title first.");
@@ -45,75 +49,112 @@ function RichTextEditor({ onRichTextEditorChange, index, defaultValue = "" }) {
     }
 
     try {
+
       setLoading(true);
 
-      const prompt = PROMPT.replace("{positionTitle}", experience.title);
+      const prompt = PROMPT.replace(
+        "{positionTitle}",
+        experience.title
+      );
 
       const responseText = await generateText(prompt);
 
-      // Clean any markdown/formatting
-      const cleanHTML = responseText.replace(/```html|```json|```/g, "").trim();
+      // Extract <ul> block safely
+      const match = responseText.match(/<ul[\s\S]*<\/ul>/i);
+      const cleanHTML = match ? match[0] : responseText.trim();
 
       setValue(cleanHTML);
-      onRichTextEditorChange(cleanHTML); // pass HTML string upward
+      onRichTextEditorChange(cleanHTML);
 
-      toast.success("AI generated experience summary!");
+      toast.success("AI generated experience bullets!");
+
     } catch (err) {
+
       console.error("AI Error:", err);
       toast.error("AI generation failed.");
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
   return (
     <div>
-      <div className="flex justify-between my-2">
-        <label className="text-xs">Summary</label>
+
+      {/* Header */}
+      <div className="flex justify-between items-center my-2">
+
+        <label className="text-xs font-medium text-brand-muted">
+          Summary
+        </label>
 
         <Button
           variant="outline"
           size="sm"
           onClick={generateAIContent}
           disabled={loading}
-          className="flex gap-2 border-primary text-primary"
+          className="flex gap-2"
         >
+
           {loading ? (
-            <LoaderCircle className="animate-spin" />
+            <>
+              <LoaderCircle className="animate-spin h-4 w-4" />
+              Generating
+            </>
           ) : (
             <>
-              <Brain className="h-4 w-4" /> Generate with AI
+              <Brain className="h-4 w-4" />
+              Generate with AI
             </>
           )}
+
         </Button>
+
       </div>
 
-      <EditorProvider>
-        <Editor
-          value={value}
-          onChange={(e) => {
-            const html = e.target.value;
-            setValue(html);
-            onRichTextEditorChange(html); // send plain HTML
-          }}
-        >
-          <Toolbar>
-            <BtnBold />
-            <BtnItalic />
-            <BtnUnderline />
-            <BtnStrikeThrough />
+      {/* Editor */}
+      <div className="border border-brand-border rounded-md overflow-hidden bg-white">
 
-            <Separator />
+        <EditorProvider>
 
-            <BtnNumberedList />
-            <BtnBulletList />
+          <Editor
+            value={value}
+            onChange={(e) => {
 
-            <Separator />
+              const html = e.target.value;
 
-            <BtnLink />
-          </Toolbar>
-        </Editor>
-      </EditorProvider>
+              setValue(html);
+              onRichTextEditorChange(html);
+
+            }}
+          >
+
+            <Toolbar>
+
+              <BtnBold />
+              <BtnItalic />
+              <BtnUnderline />
+              <BtnStrikeThrough />
+
+              <Separator />
+
+              <BtnNumberedList />
+              <BtnBulletList />
+
+              <Separator />
+
+              <BtnLink />
+
+            </Toolbar>
+
+          </Editor>
+
+        </EditorProvider>
+
+      </div>
+
     </div>
   );
 }

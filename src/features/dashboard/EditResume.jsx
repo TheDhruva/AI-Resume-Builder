@@ -3,41 +3,80 @@ import { useParams } from "react-router-dom";
 import ResumePreview from "@/features/resumeEditor/ResumePreview";
 import FormSection from "@/features/resumeEditor/FormSection";
 import { ResumeInfoContext } from "@/features/resumeEditor/ResumeInfoContext";
+
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api"; // Adjust path if needed
+import { api } from "../../../convex/_generated/api";
+
+import PageContainer from "@/components/layout/PageContainer";
 
 function EditResume() {
-  const { id } = useParams(); // ✅ Get resume ID from URL
+  const { id } = useParams();
+
   const [resumeInfo, setResumeInfo] = useState({
     personalDetails: {},
     experience: [],
     education: [],
     skills: [],
-    themeColor: "#000000",
+    themeColor: "#4F46E5",
   });
 
-  // ✅ Fetch resume from Convex by ID
-  const fetchedResume = useQuery(api.resumes.getResumeById, { resumeId: id });
+  const fetchedResume = useQuery(
+    api.resumes.getResumeById,
+    id ? { resumeId: id } : "skip"
+  );
 
   useEffect(() => {
-    if (fetchedResume) {
-      setResumeInfo(fetchedResume.resumeInfo || {});
+    if (fetchedResume?.resumeInfo) {
+      setResumeInfo(fetchedResume.resumeInfo);
     }
   }, [fetchedResume]);
 
+  // Loading
+  if (fetchedResume === undefined) {
+    return (
+      <PageContainer>
+        <div className="text-center py-20 text-brand-muted">
+          Loading resume editor...
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Not found
   if (!fetchedResume) {
-    return <p className="p-10 text-gray-500">Loading resume...</p>;
+    return (
+      <PageContainer>
+        <div className="text-center py-20">
+          <h2 className="text-xl font-semibold mb-2">
+            Resume not found
+          </h2>
+          <p className="text-brand-muted">
+            The resume you are trying to edit does not exist.
+          </p>
+        </div>
+      </PageContainer>
+    );
   }
 
   return (
     <ResumeInfoContext.Provider value={{ resumeInfo, setResumeInfo }}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-8">
-        {/* Left: Form for editing */}
-        <FormSection />
+      <PageContainer className="pt-6">
 
-        {/* Right: Live Preview */}
-        <ResumePreview />
-      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+          {/* ---------- FORM SECTION ---------- */}
+          <div className="space-y-6">
+            <FormSection />
+          </div>
+
+          {/* ---------- LIVE PREVIEW ---------- */}
+          <div className="sticky top-24 h-fit">
+            <ResumePreview />
+          </div>
+
+        </div>
+
+      </PageContainer>
     </ResumeInfoContext.Provider>
   );
 }

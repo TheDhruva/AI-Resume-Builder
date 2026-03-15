@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 import PersonalDetail from "./form/PersonalDetail";
@@ -7,44 +7,71 @@ import Experience from "./form/Experience";
 import Education from "./form/Education";
 import Skills from "./form/Skills";
 
-import { ArrowRight, ArrowLeft, LayoutGrid, Home } from "lucide-react";
+import { ArrowRight, ArrowLeft, Home } from "lucide-react";
 import { useParams, Navigate, Link } from "react-router-dom";
 
-import ThemeColor from "@/components/custom/ThemeColor"; // ✅ Ensure correct import path
+import ThemeColor from "@/components/custom/ThemeColor";
+import Card from "@/components/layout/Card";
 
 function FormSection() {
   const [activeFormIndex, setActiveFormIndex] = useState(1);
   const [enableNext, setEnableNext] = useState(false);
 
-  const { id } = useParams(); // resume id
+  const { id } = useParams();
 
-  const goNext = () => setActiveFormIndex((prev) => prev + 1);
-  const goBack = () => setActiveFormIndex((prev) => prev - 1);
+  const MAX_STEP = 6;
+
+  const goNext = () => {
+    setActiveFormIndex((prev) => Math.min(prev + 1, MAX_STEP));
+  };
+
+  const goBack = () => {
+    setActiveFormIndex((prev) => Math.max(prev - 1, 1));
+  };
+
+  // Reset next button when step changes
+  useEffect(() => {
+    setEnableNext(false);
+  }, [activeFormIndex]);
 
   return (
-    <div className="p-5 shadow-md rounded-lg border border-gray-200">
+    <Card className="p-6">
 
-      {/* Top Header Section */}
-      <div className="flex justify-between items-center mb-4">
+      {/* ---------- HEADER ---------- */}
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
 
-        {/* Back to Dashboard */}
-        <div className="flex gap-5">
-          <Link to="/dashboard">
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <Home size={16} /> Dashboard
-            </Button>
-          </Link>
-        </div>
+        {/* Dashboard Link */}
+        <Link to="/dashboard">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Home size={16} />
+            Dashboard
+          </Button>
+        </Link>
 
-        {/* Theme Color */}
+        {/* Step Indicator */}
+        <p className="text-sm text-brand-muted">
+          Step {activeFormIndex} of 5
+        </p>
+
+        {/* Theme Color Picker */}
         <ThemeColor />
 
-        {/* Navigation Buttons */}
+        {/* Navigation */}
         <div className="flex gap-2">
 
           {activeFormIndex > 1 && (
-            <Button variant="outline" size="sm" onClick={goBack}>
-              <ArrowLeft size={16} /> Back
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Back
             </Button>
           )}
 
@@ -52,27 +79,47 @@ function FormSection() {
             size="sm"
             className="flex gap-2 items-center"
             onClick={goNext}
-            disabled={activeFormIndex !== 6 && !enableNext}
+            disabled={activeFormIndex !== 5 && !enableNext}
           >
-            Next <ArrowRight size={16} />
+            Next
+            <ArrowRight size={16} />
           </Button>
 
         </div>
 
       </div>
 
-      {/* Form Steps */}
-      {activeFormIndex === 1 && <PersonalDetail enabledNext={setEnableNext} />}
-      {activeFormIndex === 2 && <Summery enabledNext={setEnableNext} />}
-      {activeFormIndex === 3 && <Experience enabledNext={setEnableNext} />}
-      {activeFormIndex === 4 && <Education enabledNext={setEnableNext} />}
-      {activeFormIndex === 5 && <Skills enabledNext={setEnableNext} />}
+      {/* ---------- FORM STEPS ---------- */}
 
-      {/* Redirect to View after step 6 */}
-      {activeFormIndex === 6 && (
-        <Navigate to={`/dashboard/resume/${id}/view`} replace />
+      {activeFormIndex === 1 && (
+        <PersonalDetail enabledNext={setEnableNext} />
       )}
-    </div>
+
+      {activeFormIndex === 2 && (
+        <Summery enabledNext={setEnableNext} />
+      )}
+
+      {activeFormIndex === 3 && (
+        <Experience enabledNext={setEnableNext} />
+      )}
+
+      {activeFormIndex === 4 && (
+        <Education enabledNext={setEnableNext} />
+      )}
+
+      {activeFormIndex === 5 && (
+        <Skills enabledNext={setEnableNext} />
+      )}
+
+      {/* ---------- REDIRECT ---------- */}
+      {activeFormIndex === 6 && (
+        <Navigate
+          to={`/dashboard/resume/${id}/view`}
+          replace
+        />
+      )}
+
+    </Card>
   );
 }
 

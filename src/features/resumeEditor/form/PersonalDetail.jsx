@@ -53,9 +53,9 @@ function PersonalDetail({ enabledNext }) {
   };
 
   return (
-    <div className="p-5 shadow-lg rounded-lg border-t-4 border-primary mt-4">
-      <h2 className="font-bold text-lg mb-2 text-gray-800">Personal Details</h2>
-      <p className="text-gray-500 mb-4">
+    <div className="p-6 shadow-sm rounded-xl border-t-4 border-primary border-[1px] border-x-gray-200 border-b-gray-200 bg-white mt-4">
+      <h2 className="font-bold text-xl mb-1 text-gray-900">Personal Details</h2>
+      <p className="text-muted-foreground text-sm mb-6">
         Enter your basic information below.
       </p>
 
@@ -136,14 +136,14 @@ const InputField = ({
   className = "",
 }) => (
   <div className={className}>
-    <label className="text-sm block mb-1">{label}</label>
+    <label className="text-sm font-medium text-gray-700 block mb-1.5">{label}</label>
     <input
       name={name}
       type={type}
       required
       value={value}
       onChange={onChange}
-      className="w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-primary"
+      className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
     />
   </div>
 );

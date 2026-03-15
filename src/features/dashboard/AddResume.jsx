@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { v4 as uuidv4 } from "uuid";
@@ -19,36 +20,31 @@ function AddResume() {
   const [openDialog, setOpenDialog] = useState(false);
   const [resumeTitle, setResumeTitle] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const createResume = useMutation(api.resumes.createResume);
-  const { user } = useUser(); // ✅ lowercase, correct Clerk hook
+  const { user } = useUser();
 
   const onCreate = async () => {
-    if (loading) return;
-    if (!resumeTitle.trim()) return alert("Enter a Resume Title");
-    if (!user) return alert("Please sign in before creating a resume.");
+    if (!resumeTitle.trim() || loading || !user) return;
 
     try {
       setLoading(true);
+
       const resumeId = uuidv4();
 
       await createResume({
         id: resumeId,
         title: resumeTitle,
-        userId: user.id, // ✅ Correct usage — not a string literal
+        userId: user.id,
       });
 
-      console.log("✅ Resume Created:", resumeId, resumeTitle);
-
-      // ✅ Redirect to Edit Resume page
       navigate(`/dashboard/resume/${resumeId}`);
 
-      // Reset dialog + state
       setOpenDialog(false);
       setResumeTitle("");
     } catch (err) {
-      console.error("❌ Error creating resume:", err);
+      console.error("Error creating resume:", err);
     } finally {
       setLoading(false);
     }
@@ -56,51 +52,91 @@ function AddResume() {
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+      
+      {/* ---------- ADD CARD ---------- */}
       <DialogTrigger asChild>
         <div
-          onClick={() => setOpenDialog(true)}
-          className="p-14 py-24 border flex items-center justify-center 
-                     rounded-lg bg-secondary h-[280px] cursor-pointer 
-                     border-dashed hover:shadow-md transition"
+          className="h-[280px] border border-dashed border-brand-border
+          bg-white rounded-xl flex flex-col items-center justify-center
+          cursor-pointer hover:shadow-md hover:border-brand-primary
+          transition-all text-center"
         >
-          <PlusSquare size={32} />
+
+          <PlusSquare
+            size={36}
+            className="text-brand-primary mb-3"
+          />
+
+          <p className="font-medium">
+            Create Resume
+          </p>
+
+          <p className="text-sm text-brand-muted">
+            Start a new AI resume
+          </p>
+
         </div>
       </DialogTrigger>
 
-      <DialogContent>
+      {/* ---------- DIALOG ---------- */}
+      <DialogContent className="sm:max-w-md">
+
         <DialogHeader>
-          <DialogTitle>Add New Resume</DialogTitle>
-          <DialogDescription>
-            <p className="mb-2">Add a title for your new resume.</p>
-            <input
-              value={resumeTitle}
-              onChange={(e) => setResumeTitle(e.target.value)}
-              className="w-full p-2 border rounded-md outline-none"
-              placeholder="Ex. Full Stack Resume"
-              disabled={loading}
-            />
+
+          <DialogTitle>
+            Create New Resume
+          </DialogTitle>
+
+          <DialogDescription className="text-brand-muted">
+            Give your resume a title to get started.
           </DialogDescription>
+
         </DialogHeader>
 
-        <div className="mt-4 flex justify-end gap-3">
+        {/* INPUT */}
+        <div className="mt-4">
+
+          <input
+            value={resumeTitle}
+            onChange={(e) => setResumeTitle(e.target.value)}
+            placeholder="Ex. Full Stack Developer Resume"
+            disabled={loading}
+            className="w-full p-3 rounded-lg border border-brand-border
+            focus:outline-none focus:ring-2 focus:ring-brand-primary
+            focus:border-brand-primary transition"
+          />
+
+        </div>
+
+        {/* ACTION BUTTONS */}
+        <div className="flex justify-end gap-3 mt-6">
+
           <Button
             variant="ghost"
-            onClick={() => !loading && setOpenDialog(false)}
+            onClick={() => setOpenDialog(false)}
             disabled={loading}
           >
             Cancel
           </Button>
-          <Button disabled={!resumeTitle || loading} onClick={onCreate}>
+
+          <Button
+            disabled={!resumeTitle.trim() || loading}
+            onClick={onCreate}
+          >
+
             {loading ? (
-              <div className="flex items-center gap-2">
+              <span className="flex items-center gap-2">
                 <Loader2 className="animate-spin" size={16} />
                 Creating...
-              </div>
+              </span>
             ) : (
-              "Create"
+              "Create Resume"
             )}
+
           </Button>
+
         </div>
+
       </DialogContent>
     </Dialog>
   );

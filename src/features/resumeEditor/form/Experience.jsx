@@ -17,7 +17,7 @@ const emptyExperience = {
   workSummary: "",
 };
 
-function Experience() {
+function Experience({ enabledNext }) {
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
 
   const updateResumeInfo = useMutation(api.resumes.updateResumeInfo);
@@ -69,6 +69,7 @@ function Experience() {
       });
 
       toast.success("Experience saved!");
+      enabledNext && enabledNext(true);
     } catch (err) {
       console.error("Error saving:", err);
       toast.error("Failed to save experience.");
@@ -78,6 +79,7 @@ function Experience() {
   const handleChange = (index, event) => {
     const { name, value } = event.target;
 
+    enabledNext && enabledNext(false);
     setExperienceList((prev) => {
       const updated = [...prev];
       updated[index][name] = value;
@@ -86,6 +88,7 @@ function Experience() {
   };
 
   const handleRichTextChange = (index, html) => {
+    enabledNext && enabledNext(false);
     setExperienceList((prev) => {
       const updated = [...prev];
       updated[index].workSummary = html;
@@ -94,10 +97,12 @@ function Experience() {
   };
 
   const AddNewExperience = () => {
+    enabledNext && enabledNext(false);
     setExperienceList((prev) => [...prev, { ...emptyExperience }]);
   };
 
   const RemoveExperience = () => {
+    enabledNext && enabledNext(false);
     setExperienceList((prev) => {
       if (prev.length === 1) {
         toast("At least one experience is required");
@@ -109,11 +114,11 @@ function Experience() {
 
   return (
     <div
-      className="p-5 shadow-lg rounded-lg mt-4"
+      className="p-6 shadow-sm rounded-xl border-[1px] border-x-gray-200 border-b-gray-200 bg-white mt-4"
       style={{ borderTop: `4px solid ${themeColor}` }}
     >
       <h2
-        className="font-bold text-lg mb-1"
+        className="font-bold text-xl mb-4"
         style={{ color: themeColor }}
       >
         Professional Experience
@@ -122,9 +127,9 @@ function Experience() {
       {experienceList.map((item, index) => (
         <div
           key={index}
-          className="grid grid-cols-2 gap-3 p-4 mb-5 rounded bg-gray-50"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 mb-5 rounded-lg border border-gray-100 bg-gray-50/50"
           style={{
-            borderLeft: `3px solid ${themeColor}`,
+            borderTop: `4px solid ${themeColor}`,
           }}
         >
           <InputField
@@ -184,13 +189,15 @@ function Experience() {
         </div>
       ))}
 
-      <div className="flex justify-between mt-4">
-        <Button variant="outline" onClick={AddNewExperience}>
-          + Add Experience
-        </Button>
-        <Button variant="outline" onClick={RemoveExperience}>
-          - Remove
-        </Button>
+      <div className="flex justify-between mt-6">
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={AddNewExperience}>
+            + Add Experience
+          </Button>
+          <Button variant="outline" onClick={RemoveExperience} className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200">
+            - Remove
+          </Button>
+        </div>
         <Button onClick={onSave}>Save</Button>
       </div>
     </div>
@@ -199,13 +206,13 @@ function Experience() {
 
 const InputField = ({ label, name, value, onChange, type = "text" }) => (
   <div>
-    <label className="text-xs">{label}</label>
+    <label className="text-sm font-medium text-gray-700 block mb-1.5">{label}</label>
     <input
       name={name}
       type={type}
       value={value}
       onChange={onChange}
-      className="w-full p-2 border rounded mt-1"
+      className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
     />
   </div>
 );
