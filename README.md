@@ -21,7 +21,7 @@ The AI Resume Builder is a modern, responsive web application designed to help u
 > *Placeholders for your demo media.*
 
 ![Dashboard Preview](./public/dashboard-preview.png)
-![Editor Demo](./public/editor-demo.gif)
+
 
 # Tech Stack
 
