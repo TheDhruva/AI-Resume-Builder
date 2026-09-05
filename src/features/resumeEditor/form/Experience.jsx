@@ -1,11 +1,9 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { ResumeInfoContext } from "@/features/resumeEditor/ResumeInfoContext";
-import { toast } from "sonner";
 import RichTextEditor from "@/components/custom/RichTextEditor";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { useParams } from "react-router-dom";
+import AiAssistMenu from "@/features/resumeEditor/AiAssistMenu";
+import { toast } from "sonner";
 
 const emptyExperience = {
   title: "",
@@ -14,207 +12,147 @@ const emptyExperience = {
   state: "",
   startDate: "",
   endDate: "",
+  currentlyWorking: false,
   workSummary: "",
 };
 
-function Experience({ enabledNext }) {
-  const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
-
-  const updateResumeInfo = useMutation(api.resumes.updateResumeInfo);
-  const { id: resumeId } = useParams();
-
-  const themeColor =
-    resumeInfo?.resumeInfo?.themeColor ||
-    resumeInfo?.themeColor ||
-    "#000000";
-
-  const [experienceList, setExperienceList] = useState(() => {
-    return (
-      resumeInfo?.resumeInfo?.experience ||
-      resumeInfo?.experience ||
-      [{ ...emptyExperience }]
-    );
-  });
-
-  useEffect(() => {
-    const loaded =
-      resumeInfo?.resumeInfo?.experience ||
-      resumeInfo?.experience ||
-      [];
-
-    if (loaded.length > 0) {
-      setExperienceList(loaded);
-    }
-  }, [resumeInfo]);
-
-  useEffect(() => {
-    setResumeInfo((prev) => ({
-      ...prev,
-      resumeInfo: {
-        ...prev.resumeInfo,
-        experience: experienceList,
-      },
-    }));
-  }, [experienceList]);
-
-  const onSave = async () => {
-    try {
-      await updateResumeInfo({
-        resumeId,
-        field: "resumeInfo",
-        value: {
-          ...resumeInfo?.resumeInfo,
-          experience: experienceList,
-        },
-      });
-
-      toast.success("Experience saved!");
-      enabledNext && enabledNext(true);
-    } catch (err) {
-      console.error("Error saving:", err);
-      toast.error("Failed to save experience.");
-    }
-  };
-
-  const handleChange = (index, event) => {
-    const { name, value } = event.target;
-
-    enabledNext && enabledNext(false);
-    setExperienceList((prev) => {
-      const updated = [...prev];
-      updated[index][name] = value;
-      return updated;
-    });
-  };
-
-  const handleRichTextChange = (index, html) => {
-    enabledNext && enabledNext(false);
-    setExperienceList((prev) => {
-      const updated = [...prev];
-      updated[index].workSummary = html;
-      return updated;
-    });
-  };
-
-  const AddNewExperience = () => {
-    enabledNext && enabledNext(false);
-    setExperienceList((prev) => [...prev, { ...emptyExperience }]);
-  };
-
-  const RemoveExperience = () => {
-    enabledNext && enabledNext(false);
-    setExperienceList((prev) => {
-      if (prev.length === 1) {
-        toast("At least one experience is required");
-        return prev;
-      }
-      return prev.slice(0, -1);
-    });
-  };
-
+function Field({ label, name, value, onChange, type = "text" }) {
   return (
-    <div
-      className="p-6 shadow-sm rounded-xl border-[1px] border-x-gray-200 border-b-gray-200 bg-white mt-4"
-      style={{ borderTop: `4px solid ${themeColor}` }}
-    >
-      <h2
-        className="font-bold text-xl mb-4"
-        style={{ color: themeColor }}
-      >
-        Professional Experience
-      </h2>
-
-      {experienceList.map((item, index) => (
-        <div
-          key={index}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 mb-5 rounded-lg border border-gray-100 bg-gray-50/50"
-          style={{
-            borderTop: `4px solid ${themeColor}`,
-          }}
-        >
-          <InputField
-            label="Position Title"
-            name="title"
-            value={item.title}
-            onChange={(e) => handleChange(index, e)}
-          />
-
-          <InputField
-            label="Company Name"
-            name="companyName"
-            value={item.companyName}
-            onChange={(e) => handleChange(index, e)}
-          />
-
-          <InputField
-            label="City"
-            name="city"
-            value={item.city}
-            onChange={(e) => handleChange(index, e)}
-          />
-
-          <InputField
-            label="State"
-            name="state"
-            value={item.state}
-            onChange={(e) => handleChange(index, e)}
-          />
-
-          <InputField
-            label="Start Date"
-            type="date"
-            name="startDate"
-            value={item.startDate}
-            onChange={(e) => handleChange(index, e)}
-          />
-
-          <InputField
-            label="End Date"
-            type="date"
-            name="endDate"
-            value={item.endDate}
-            onChange={(e) => handleChange(index, e)}
-          />
-
-          <div className="col-span-2">
-            <label className="text-xs font-medium">Work Summary</label>
-            <RichTextEditor
-              defaultValue={item.workSummary}
-              index={index}
-              onRichTextEditorChange={(html) =>
-                handleRichTextChange(index, html)
-              }
-            />
-          </div>
-        </div>
-      ))}
-
-      <div className="flex justify-between mt-6">
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={AddNewExperience}>
-            + Add Experience
-          </Button>
-          <Button variant="outline" onClick={RemoveExperience} className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200">
-            - Remove
-          </Button>
-        </div>
-        <Button onClick={onSave}>Save</Button>
-      </div>
+    <div>
+      <label className="text-sm font-medium block mb-1.5">{label}</label>
+      <input
+        name={name}
+        type={type}
+        value={value || ""}
+        onChange={onChange}
+        className="field-input"
+      />
     </div>
   );
 }
 
-const InputField = ({ label, name, value, onChange, type = "text" }) => (
-  <div>
-    <label className="text-sm font-medium text-gray-700 block mb-1.5">{label}</label>
-    <input
-      name={name}
-      type={type}
-      value={value}
-      onChange={onChange}
-      className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-    />
-  </div>
-);
+export default function Experience() {
+  const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
+  const experienceList =
+    resumeInfo?.experience?.length > 0
+      ? resumeInfo.experience
+      : [{ ...emptyExperience }];
 
-export default Experience;
+  const updateList = (next) => {
+    setResumeInfo((prev) => ({ ...prev, experience: next }));
+  };
+
+  const handleChange = (index, event) => {
+    const { name, value, type, checked } = event.target;
+    updateList(
+      experienceList.map((item, i) =>
+        i === index
+          ? { ...item, [name]: type === "checkbox" ? checked : value }
+          : item
+      )
+    );
+  };
+
+  const handleRichTextChange = (index, html) => {
+    updateList(
+      experienceList.map((item, i) =>
+        i === index ? { ...item, workSummary: html } : item
+      )
+    );
+  };
+
+  return (
+    <div className="editor-panel">
+      <h2 className="editor-panel-title">Experience</h2>
+      <p className="editor-panel-desc">
+        Add roles and use AI to generate or improve bullet points.
+      </p>
+
+      <div className="mt-5 space-y-5">
+        {experienceList.map((item, index) => (
+          <div
+            key={index}
+            className="rounded-lg border border-border bg-secondary/30 p-4 sm:p-5"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Position title" name="title" value={item.title} onChange={(e) => handleChange(index, e)} />
+              <Field label="Company" name="companyName" value={item.companyName} onChange={(e) => handleChange(index, e)} />
+              <Field label="City" name="city" value={item.city} onChange={(e) => handleChange(index, e)} />
+              <Field label="State / region" name="state" value={item.state} onChange={(e) => handleChange(index, e)} />
+              <Field label="Start date" type="date" name="startDate" value={item.startDate} onChange={(e) => handleChange(index, e)} />
+              <Field label="End date" type="date" name="endDate" value={item.endDate} onChange={(e) => handleChange(index, e)} />
+            </div>
+
+            <label className="mt-3 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="currentlyWorking"
+                checked={Boolean(item.currentlyWorking)}
+                onChange={(e) => handleChange(index, e)}
+                className="h-4 w-4"
+              />
+              Currently working here
+            </label>
+
+            <div className="mt-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <span className="text-sm font-medium">Work summary</span>
+                <AiAssistMenu
+                  section="experience"
+                  content={item.workSummary || ""}
+                  context={{ title: item.title, companyName: item.companyName }}
+                  targetJob={resumeInfo?.targetJob}
+                  allowedActions={[
+                    "improve",
+                    "rewrite",
+                    "concise",
+                    "professional",
+                    "technical",
+                    "metrics",
+                    "tailor",
+                    "bullets",
+                  ]}
+                  onResult={(html) => handleRichTextChange(index, html)}
+                />
+              </div>
+              <RichTextEditor
+                defaultValue={item.workSummary}
+                index={index}
+                positionTitle={item.title}
+                companyName={item.companyName}
+                targetJob={resumeInfo?.targetJob}
+                onRichTextEditorChange={(html) =>
+                  handleRichTextChange(index, html)
+                }
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => updateList([...experienceList, { ...emptyExperience }])}
+        >
+          + Add experience
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="text-destructive border-destructive/30"
+          onClick={() => {
+            if (experienceList.length <= 1) {
+              toast("Keep at least one experience card.");
+              return;
+            }
+            updateList(experienceList.slice(0, -1));
+          }}
+        >
+          − Remove last
+        </Button>
+      </div>
+    </div>
+  );
+}

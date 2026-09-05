@@ -1,191 +1,161 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { ResumeInfoContext } from "@/features/resumeEditor/ResumeInfoContext";
 import { toast } from "sonner";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { useParams } from "react-router-dom";
 
-const emptySkill = {
-  category: "",
-  itemsText: "",
-  items: [],
-};
+const emptySkill = { category: "", items: [], itemsText: "" };
 
-function Skills({ enabledNext }) {
+export default function Skills() {
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
-  const updateResumeInfo = useMutation(api.resumes.updateResumeInfo);
-  const { id: resumeId } = useParams();
 
-  const [skillsList, setSkillsList] = useState(() => {
-    const dbSkills =
-      resumeInfo?.resumeInfo?.skills ||
-      resumeInfo?.skills ||
-      [];
+  const skillsList =
+    resumeInfo?.skills?.length > 0
+      ? resumeInfo.skills.map((s) => ({
+          ...s,
+          itemsText: s.itemsText ?? (s.items || []).join(", "),
+        }))
+      : [{ ...emptySkill }];
 
-    if (dbSkills.length > 0) {
-      return dbSkills.map((skill) => ({
-        ...skill,
-        itemsText: skill.items ? skill.items.join(", ") : "",
-      }));
-    }
+  const missing = resumeInfo?.targetJob?.insights?.requiredSkills || [];
 
-    return [{ ...emptySkill }];
-  });
-
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    if (hydrated) return;
-
-    const dbSkills =
-      resumeInfo?.resumeInfo?.skills ||
-      resumeInfo?.skills ||
-      [];
-
-    if (dbSkills.length > 0) {
-      const formattedSkills = dbSkills.map((skill) => ({
-        ...skill,
-        itemsText: skill.items ? skill.items.join(", ") : "",
-      }));
-
-      setSkillsList(formattedSkills);
-      setHydrated(true);
-    }
-  }, [resumeInfo, hydrated]);
-
-  useEffect(() => {
+  const updateList = (next) => {
     setResumeInfo((prev) => ({
       ...prev,
-      resumeInfo: {
-        ...prev.resumeInfo,
-        skills: skillsList,
-      },
+      skills: next.map(({ itemsText, category, items }) => ({
+        category,
+        items:
+          items ||
+          String(itemsText || "")
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean),
+      })),
     }));
-  }, [skillsList, setResumeInfo]);
+  };
 
   const handleChange = (index, field, value) => {
-    enabledNext && enabledNext(false);
-
-    setSkillsList((prev) => {
-      const updated = [...prev];
-
+    const next = skillsList.map((skill, i) => {
+      if (i !== index) return skill;
       if (field === "itemsText") {
-        updated[index].itemsText = value;
-        updated[index].items = value
-          .split(",")
-          .map((v) => v.trim())
-          .filter(Boolean);
-      } else {
-        updated[index][field] = value;
+        return {
+          ...skill,
+          itemsText: value,
+          items: value
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean),
+        };
       }
-
-      return updated;
+      return { ...skill, [field]: value };
     });
+    updateList(next);
   };
 
-  const addSkillGroup = () => {
-    enabledNext && enabledNext(false);
-    setSkillsList((prev) => [...prev, { ...emptySkill }]);
-  };
-
-  const removeSkillGroup = () => {
-    enabledNext && enabledNext(false);
-
-    if (skillsList.length === 1) {
-      toast("At least one skill section is required");
+  const addMissingKeyword = (keyword) => {
+    const first = { ...(skillsList[0] || emptySkill) };
+    const items = [...(first.items || [])];
+    if (items.some((i) => i.toLowerCase() === keyword.toLowerCase())) {
+      toast("Already in skills");
       return;
     }
-
-    setSkillsList((prev) => prev.slice(0, -1));
+    items.push(keyword);
+    first.category = first.category || "Skills";
+    first.items = items;
+    first.itemsText = items.join(", ");
+    updateList([first, ...skillsList.slice(1)]);
+    toast.success(`Added ${keyword}`);
   };
 
-  const handleSave = async () => {
-    const skillsToSave = skillsList.map(({ itemsText, ...rest }) => rest);
-
-    try {
-      await updateResumeInfo({
-        resumeId,
-        field: "resumeInfo",
-        value: {
-          ...resumeInfo?.resumeInfo,
-          skills: skillsToSave,
-        },
-      });
-
-      toast.success("Skills saved permanently!");
-      enabledNext && enabledNext(true);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to save skills.");
-    }
-  };
+  const resumeSkillSet = new Set(
+    skillsList.flatMap((s) => (s.items || []).map((i) => i.toLowerCase()))
+  );
+  const missingShown = missing.filter(
+    (m) =>
+      ![...resumeSkillSet].some(
+        (r) => r.includes(m.toLowerCase()) || m.toLowerCase().includes(r)
+      )
+  );
 
   return (
-    <div className="p-6 shadow-sm rounded-xl border border-gray-200 border-t-4 border-t-primary bg-white mt-4">
-      <h2 className="font-bold text-xl text-gray-900 mb-1">Skills</h2>
-      <p className="text-muted-foreground text-sm mb-6">
-        Add skills by categories.
+    <div className="editor-panel">
+      <h2 className="editor-panel-title">Skills</h2>
+      <p className="editor-panel-desc">
+        Group skills by category. Add missing JD keywords with one tap.
       </p>
 
-      {skillsList.map((skill, index) => (
-        <div
-          key={index}
-          className="border border-gray-100 p-5 rounded-lg mb-5 bg-gray-50/50 grid grid-cols-1 gap-4"
-        >
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1.5">
-              Category
-            </label>
-
-            <input
-              type="text"
-              value={skill.category}
-              onChange={(e) =>
-                handleChange(index, "category", e.target.value)
-              }
-              className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-              placeholder="Frontend, Backend, Tools..."
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1.5">
-              Skills (comma separated)
-            </label>
-
-            <input
-              type="text"
-              value={skill.itemsText || ""}
-              onChange={(e) =>
-                handleChange(index, "itemsText", e.target.value)
-              }
-              className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-              placeholder="React, Next.js, Tailwind, Git"
-            />
+      {missingShown.length > 0 && (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+          <p className="text-sm font-medium text-amber-900 mb-2">
+            Missing from job description
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {missingShown.slice(0, 12).map((kw) => (
+              <button
+                key={kw}
+                type="button"
+                onClick={() => addMissingKeyword(kw)}
+                className="text-xs px-2.5 py-1 rounded-md border border-amber-300 bg-white hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                + {kw}
+              </button>
+            ))}
           </div>
         </div>
-      ))}
+      )}
 
-      <div className="flex justify-between mt-6">
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={addSkillGroup}>
-            + Add Skill Group
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={removeSkillGroup}
-            className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+      <div className="mt-5 space-y-4">
+        {skillsList.map((skill, index) => (
+          <div
+            key={index}
+            className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3"
           >
-            - Remove
-          </Button>
-        </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">Category</label>
+              <input
+                className="field-input"
+                value={skill.category || ""}
+                onChange={(e) => handleChange(index, "category", e.target.value)}
+                placeholder="Frontend, Backend, Tools..."
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">
+                Skills (comma separated)
+              </label>
+              <input
+                className="field-input"
+                value={skill.itemsText || ""}
+                onChange={(e) => handleChange(index, "itemsText", e.target.value)}
+                placeholder="React, Next.js, Tailwind, Git"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
 
-        <Button onClick={handleSave}>Save</Button>
+      <div className="flex flex-wrap gap-2 mt-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => updateList([...skillsList, { ...emptySkill }])}
+        >
+          + Add skill group
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="text-destructive border-destructive/30"
+          onClick={() => {
+            if (skillsList.length <= 1) {
+              toast("Keep at least one skill group.");
+              return;
+            }
+            updateList(skillsList.slice(0, -1));
+          }}
+        >
+          − Remove last
+        </Button>
       </div>
     </div>
   );
 }
-
-export default Skills;

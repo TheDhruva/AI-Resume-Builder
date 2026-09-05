@@ -1,164 +1,171 @@
-import React, { useEffect, useContext, useState, useRef } from "react";
+import React, { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ResumeInfoContext } from "@/features/resumeEditor/ResumeInfoContext";
+import AiAssistMenu from "@/features/resumeEditor/AiAssistMenu";
 import { toast } from "sonner";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { useParams } from "react-router-dom";
-import { Brain, Loader2 } from "lucide-react";
-import { generateText } from "@/lib/AIModel"; // ✅ Gemini helper
+import { Sparkles, Loader2 } from "lucide-react";
+import { useAI } from "@/lib/AIModel";
 
-function Summary({ enabledNext }) {
+function buildResumeFacts(info) {
+  const lines = [];
+  const p = info?.personalDetails || {};
+  if (p.jobTitle) lines.push(`Headline: ${p.jobTitle}`);
+
+  (info?.experience || []).forEach((e, i) => {
+    if (!e.title && !e.companyName) return;
+    lines.push(
+      `Experience ${i + 1}: ${e.title || "Role"} at ${e.companyName || "Company"}`
+    );
+    if (e.workSummary) {
+      lines.push(
+        String(e.workSummary)
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 400)
+      );
+    }
+  });
+
+  (info?.projects || []).forEach((pr, i) => {
+    if (!pr.name && !pr.description) return;
+    lines.push(
+      `Project ${i + 1}: ${pr.name || "Project"} (${(pr.technologies || []).join(", ")})`
+    );
+    if (pr.description) {
+      lines.push(
+        String(pr.description)
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 300)
+      );
+    }
+  });
+
+  (info?.skills || []).forEach((s) => {
+    if ((s.items || []).length) {
+      lines.push(`Skills (${s.category || "General"}): ${s.items.join(", ")}`);
+    }
+  });
+
+  (info?.education || []).forEach((ed) => {
+    if (ed.universityName || ed.degree) {
+      lines.push(
+        `Education: ${[ed.degree, ed.major, ed.universityName].filter(Boolean).join(" — ")}`
+      );
+    }
+  });
+
+  return lines.join("\n") || "Limited evidence provided.";
+}
+
+export default function Summery() {
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
-  const updateResumeInfo = useMutation(api.resumes.updateResumeInfo);
-  const { id: resumeId } = useParams();
-
-  const [summary, setSummary] = useState(
-    resumeInfo?.summary ?? resumeInfo?.resumeInfo?.summary ?? ""
-  );
+  const summary = resumeInfo?.summary || "";
+  const { generateSummaries } = useAI();
   const [loading, setLoading] = useState(false);
-  const [aiGeneratedSummaries, setAiGeneratedSummaries] = useState(null);
+  const [suggestions, setSuggestions] = useState(null);
 
-  // ✅ Update context for live preview
-  useEffect(() => {
-    setResumeInfo((prev) => {
-      const hasNested = !!prev?.resumeInfo;
-      return hasNested
-        ? { ...prev, resumeInfo: { ...prev.resumeInfo, summary } }
-        : { ...prev, summary };
-    });
-  }, [summary, setResumeInfo]);
+  const setSummary = (value) => {
+    setResumeInfo((prev) => ({ ...prev, summary: value }));
+  };
 
-  // ✅ Generate summaries using Gemini API
-  const GenerateSummaryFromAI = async () => {
+  const generate = async () => {
     const jobTitle =
+      resumeInfo?.targetJob?.title ||
       resumeInfo?.personalDetails?.jobTitle ||
-      resumeInfo?.resumeInfo?.personalDetails?.jobTitle ||
-      "Software Engineer";
-
-    const prompt = `
-      Act as an expert resume writer.
-      Generate 3 professional resume summaries for the Job Title: "${jobTitle}".
-      Construct them for 'EntryLevel', 'MidLevel', and 'SeniorLevel'.
-      Constraints:
-      1. Strictly avoid clichés like "passionate", "team player", etc.
-      2. Focus on measurable impact, core hard skills, and action verbs.
-      3. Keep it to 2–3 sentences max.
-      4. Return ONLY a raw JSON object with keys 'EntryLevel', 'MidLevel', and 'SeniorLevel'. No extra text.
-    `;
+      "Professional";
 
     try {
       setLoading(true);
-      const aiResponse = await generateText(prompt);
-
-      // ✅ Clean & safely parse Gemini output
-      const cleanText = aiResponse.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(cleanText);
-
-      setAiGeneratedSummaries(parsed);
-      toast.success("✅ AI summaries generated!");
-    } catch (err) {
-      console.error("❌ AI generation error:", err);
-      toast.error("AI failed to generate. Check console for details.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ Save to Convex
-  const onSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await updateResumeInfo({
-        resumeId,
-        field: "resumeInfo",
-        value: { ...resumeInfo?.resumeInfo, summary },
+      const result = await generateSummaries({
+        jobTitle,
+        targetJob: resumeInfo?.targetJob || null,
+        resumeFacts: buildResumeFacts(resumeInfo),
       });
-      toast.success("✅ Summary saved!");
-      enabledNext && enabledNext(true);
+      setSuggestions(result);
+      toast.success("AI summaries ready");
     } catch (err) {
-      console.error("❌ Error saving summary:", err);
-      toast.error("Failed to save summary.");
+      console.error(err);
+      toast.error(err?.message || "AI failed to generate.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 shadow-sm rounded-xl border-t-4 border-primary border-[1px] border-x-gray-200 border-b-gray-200 bg-white mt-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="font-bold text-xl text-gray-900">Summary</h2>
-        <Button
-          variant="outline"
-          onClick={GenerateSummaryFromAI}
-          disabled={loading}
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Brain className="h-4 w-4" />
-          )}
-          Improve with AI
-        </Button>
+    <div className="editor-panel">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="editor-panel-title">AI Summary</h2>
+          <p className="editor-panel-desc">
+            Generate a concise summary from your experience, projects, skills,
+            and target job — without inventing unsupported claims.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={generate}
+            disabled={loading}
+            aria-busy={loading}
+            className="gap-1.5"
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            Generate with AI
+          </Button>
+          <AiAssistMenu
+            section="summary"
+            content={summary}
+            targetJob={resumeInfo?.targetJob}
+            context={{ facts: buildResumeFacts(resumeInfo).slice(0, 1500) }}
+            onResult={setSummary}
+            allowedActions={[
+              "improve",
+              "rewrite",
+              "concise",
+              "professional",
+              "technical",
+              "tailor",
+            ]}
+          />
+        </div>
       </div>
 
-      <p className="text-muted-foreground text-sm mb-6">
-        Add a concise 2–4 line professional summary tailored to your target role.
+      <Textarea
+        className="mt-5 min-h-[140px]"
+        placeholder="A short professional summary grounded in your real experience..."
+        value={summary}
+        onChange={(e) => setSummary(e.target.value)}
+      />
+      <p className="mt-2 text-xs text-muted-foreground text-right">
+        {summary.length} chars
       </p>
 
-      {/* Form */}
-      <form className="mt-7" onSubmit={onSave}>
-        <Textarea
-          className="mt-2 min-h-[140px]"
-          placeholder="Ex: Full-stack developer (React/Node) with 10+ shipped features..."
-          required
-          value={summary}
-          onChange={(e) => {
-            enabledNext && enabledNext(false);
-            setSummary(e.target.value);
-          }}
-        />
-
-        <div className="mt-3 flex justify-end">
-          <Button type="submit" disabled={loading}>
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            {loading ? "Saving..." : "Save"}
-          </Button>
-        </div>
-      </form>
-
-      <div className="mt-2 text-xs text-gray-500 text-right">
-        {summary.length} chars
-      </div>
-
-      {/* ✅ AI Suggestions */}
-      {aiGeneratedSummaries && (
-        <div className="mt-6">
-          <h2 className="font-bold text-lg mb-3">AI Suggestions</h2>
-          {Object.entries(aiGeneratedSummaries).map(([level, text], index) => (
-            <div
-              key={index}
-              className="mb-4 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-              onClick={() => {
-                enabledNext && enabledNext(false);
-                setSummary(text);
-              }}
+      {suggestions && (
+        <div className="mt-6 space-y-3">
+          <h3 className="font-semibold text-sm">AI suggestions</h3>
+          {Object.entries(suggestions).map(([level, text]) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => setSummary(String(text))}
+              className="w-full text-left p-3 border border-border rounded-lg hover:bg-secondary/60 transition focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <h3 className="font-semibold text-primary">{level}</h3>
-              <p className="text-sm text-gray-700">{text}</p>
-            </div>
+              <span className="text-xs font-semibold text-primary">{level}</span>
+              <p className="text-sm text-foreground mt-1">{String(text)}</p>
+            </button>
           ))}
         </div>
       )}
     </div>
   );
 }
-
-export default Summary;

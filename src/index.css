@@ -1,237 +1,289 @@
-/* =============================
-   ✅ Tailwind Base Imports
-============================= */
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark mode variant helper */
 @custom-variant dark (&:is(.dark *));
 
 /* =============================
-   🎨 THEME VARIABLES
+   Design tokens
 ============================= */
 @theme {
-  --color-primary: #4f46e5;
-  --color-primary-hover: #4338ca;
-
-  --color-background: #f9fafb;
+  --color-primary: #1e3a8a;
+  --color-primary-foreground: #ffffff;
+  --color-primary-hover: #1e40af;
+  --color-background: #f7f7f8;
   --color-card: #ffffff;
-
   --color-foreground: #111827;
   --color-muted-foreground: #6b7280;
-
   --color-border: #e5e7eb;
+  --color-success: #059669;
+  --color-error: #dc2626;
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
+  --color-secondary: #f3f4f6;
+  --color-secondary-foreground: #111827;
+  --color-accent: #f3f4f6;
+  --color-accent-foreground: #111827;
+  --color-ring: #1e3a8a;
 
-  --color-success: #10b981;
-  --color-error: #ef4444;
+  /* Brand aliases (fix undefined brand-* classes) */
+  --color-brand-bg: #f7f7f8;
+  --color-brand-text: #111827;
+  --color-brand-muted: #6b7280;
+  --color-brand-border: #e5e7eb;
+  --color-brand-primary: #1e3a8a;
+  --color-brand-primary-foreground: #ffffff;
+  --color-brand-hover: #1e40af;
 
-  --font-sans: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-/* =============================
-   🌐 ROOT
-============================= */
 :root {
   --radius: 0.5rem;
-
-  --background: var(--color-background);
-  --foreground: var(--color-foreground);
-
-  --card: var(--color-card);
-  --card-foreground: var(--color-foreground);
-
-  --primary: var(--color-primary);
+  --app-bg: #f7f7f8;
+  --background: #f7f7f8;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --primary: #1e3a8a;
   --primary-foreground: #ffffff;
-
   --secondary: #f3f4f6;
-  --secondary-foreground: var(--color-foreground);
-
+  --secondary-foreground: #111827;
   --muted: #f3f4f6;
-  --muted-foreground: var(--color-muted-foreground);
-
-  --border: var(--color-border);
-  --input: var(--color-border);
-  --ring: var(--color-primary);
-
-  --shadow-soft: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-medium: 0 4px 6px rgba(0,0,0,0.1);
+  --muted-foreground: #6b7280;
+  --accent: #f3f4f6;
+  --accent-foreground: #111827;
+  --destructive: #dc2626;
+  --border: #e5e7eb;
+  --input: #ffffff;
+  --ring: #1e3a8a;
+  --accent-ai: #1e3a8a;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* =============================
-   🌙 DARK MODE
-============================= */
-.dark {
-  --background: oklch(0.22 0.04 260);
-  --foreground: oklch(0.97 0.01 90);
-
-  --card: oklch(0.26 0.04 260);
-  --card-foreground: var(--foreground);
-
-  --primary: oklch(0.78 0.04 260);
-  --primary-foreground: oklch(0.16 0.01 260);
-}
-
-/* =============================
-   🌐 Root Layout
-============================= */
 #root {
   min-height: 100vh;
-  background: var(--background);
+  background: var(--app-bg);
   color: var(--foreground);
   font-family: var(--font-sans);
   font-size: 16px;
-
-  transition: background-color 0.25s ease, color 0.25s ease;
+  overflow-x: hidden;
 }
 
-/* =============================
-   🧩 Global Defaults
-============================= */
 * {
   box-sizing: border-box;
-  scroll-behavior: smooth;
   border-color: var(--border);
 }
 
-/* =============================
-   🅰️ Typography
-============================= */
-h1 { font-size: 32px; font-weight: 700; line-height: 1.2; }
-h2 { font-size: 24px; font-weight: 600; line-height: 1.3; }
-h3 { font-size: 20px; font-weight: 600; line-height: 1.4; }
-
-p {
-  font-size: 16px;
-  color: var(--foreground);
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--app-bg);
 }
-
-.text-small { font-size: 14px; }
-.text-muted { color: var(--color-muted-foreground); }
 
 a {
   color: inherit;
   text-decoration: none;
-  transition: color 0.2s ease, opacity 0.2s ease;
 }
 
-a:hover {
-  opacity: 0.85;
+/* Form fields */
+.field-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--foreground);
+  outline: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-/* =============================
-   🖱 Scrollbar
-============================= */
+.field-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.editor-panel {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .editor-panel {
+    padding: 1.5rem;
+  }
+}
+
+.editor-panel-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.editor-panel-desc {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.text-accent-ai {
+  color: var(--accent-ai);
+}
+
+.responsive-dialog {
+  width: calc(100% - 24px) !important;
+  max-width: 32rem !important;
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+}
+
+/* Resume rich text */
+.resume-richtext ul {
+  list-style: disc;
+  padding-left: 1.1rem;
+  margin: 0.25rem 0;
+}
+
+.resume-richtext li {
+  margin: 0.15rem 0;
+}
+
+.resume-richtext p {
+  margin: 0.15rem 0;
+}
+
+/* Preview scaling shell */
+.resume-preview-shell {
+  width: 100%;
+  min-width: 0;
+}
+
+.resume-preview-scaler {
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.resume-preview-scale-inner {
+  transform-origin: top left;
+}
+
+.resume-preview-scale-inner .resume-document {
+  /* Prevent the document from forcing parent overflow wider than the scale wrapper */
+  max-width: none;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--primary) 45%, transparent);
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
   border-radius: 8px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in oklch, var(--primary) 75%, transparent);
-}
-
 /* =============================
-   🗂 Container
+   PRINT / A4
+   Single document root — no nested min-height stacking.
+   Hide chrome with display:none (not visibility:hidden).
 ============================= */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
 
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
+.print-area {
+  width: 210mm;
+  max-width: 100%;
 }
 
-/* =============================
-   🎛 Inputs
-============================= */
-button,
-input,
-textarea,
-select {
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--input);
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
+@media screen {
+  .print-area {
+    box-shadow: var(--shadow-soft);
+  }
 
-button:hover,
-input:focus,
-textarea:focus,
-select:focus {
-  box-shadow: var(--shadow-medium);
-}
+  /* Scale A4 to viewport on small screens without changing document layout */
+  @media (max-width: 860px) {
+    .print-area {
+      width: 100%;
+      overflow-x: auto;
+    }
 
-/* =============================
-   🔘 Buttons
-============================= */
-.btn-primary {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: 999px;
-  padding: 0.65rem 1.35rem;
-  font-weight: 600;
+    .print-area .resume-document {
+      transform-origin: top left;
+      /* ~ (viewport - padding) / 210mm ; approx via container */
+    }
+  }
 }
-
-.btn-primary:hover {
-  background: var(--color-primary-hover);
-}
-
-.btn-outline {
-  border: 1px solid var(--primary);
-  color: var(--primary);
-  border-radius: 999px;
-  padding: 0.55rem 1.25rem;
-  font-weight: 500;
-}
-
-.btn-outline:hover {
-  background: color-mix(in oklch, var(--primary) 10%, transparent);
-}
-
-/* =============================
-   🖨 PRINT RULES (VERY IMPORTANT)
-============================= */
 
 @media print {
-
-  /* hide everything */
-  body * {
-    visibility: hidden;
+  html,
+  body,
+  #root {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
   }
 
-  /* show resume only */
+  /* Hide application chrome with display:none (not visibility:hidden) */
+  .no-print {
+    display: none !important;
+  }
+
+  header,
+  nav,
+  .editor-shell,
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
   #print-area,
-  #print-area * {
-    visibility: visible;
-  }
-
-  #print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto;
-  }
-
-  /* remove shadows etc */
-  #print-area {
+  .print-area {
+    display: block !important;
+    position: static !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
     box-shadow: none !important;
     border: none !important;
+    background: white !important;
+    transform: none !important;
   }
 
+  .resume-document {
+    box-shadow: none !important;
+    border: none !important;
+    /* One A4 root — height follows content; avoids blank page 2 from stacked min-heights */
+    min-height: auto !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    transform: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .resume-preview-shell,
+  .resume-preview-scaler,
+  .resume-preview-scale-inner {
+    display: contents;
+    transform: none !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
 }
 
-/* remove browser headers/footers */
 @page {
+  size: A4;
   margin: 0;
 }

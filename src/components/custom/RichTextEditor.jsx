@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ResumeInfoContext } from "@/features/resumeEditor/ResumeInfoContext";
 import { Brain, LoaderCircle } from "lucide-react";
-import React, { useContext, useState } from "react";
-
+import React, { useContext, useEffect, useState } from "react";
 import {
   BtnBold,
   BtnBulletList,
@@ -14,33 +13,24 @@ import {
   Editor,
   EditorProvider,
   Separator,
-  Toolbar
+  Toolbar,
 } from "react-simple-wysiwyg";
-
-import { generateText } from "@/lib/AIModel";
+import { useAI } from "@/lib/AIModel";
+import { sanitizeHtml } from "@/lib/utils";
 import { toast } from "sonner";
 
-const PROMPT = `
-Position Title: {positionTitle}
-
-Generate 5–7 professional resume bullet points for this role.
-
-Rules:
-- Use action verbs
-- Include measurable impact
-- Do not include experience level
-- Return ONLY valid HTML (<ul><li>...</li></ul>)
-`;
-
 function RichTextEditor({ onRichTextEditorChange, index, defaultValue = "" }) {
-
   const { resumeInfo } = useContext(ResumeInfoContext);
+  const { generateExperienceBullets } = useAI();
 
   const [value, setValue] = useState(defaultValue);
   const [loading, setLoading] = useState(false);
 
-  const generateAIContent = async () => {
+  useEffect(() => {
+    setValue(defaultValue || "");
+  }, [defaultValue]);
 
+  const generateAIContent = async () => {
     const experience = resumeInfo?.experience?.[index];
 
     if (!experience?.title) {
@@ -49,47 +39,31 @@ function RichTextEditor({ onRichTextEditorChange, index, defaultValue = "" }) {
     }
 
     try {
-
       setLoading(true);
-
-      const prompt = PROMPT.replace(
-        "{positionTitle}",
-        experience.title
-      );
-
-      const responseText = await generateText(prompt);
-
-      // Extract <ul> block safely
-      const match = responseText.match(/<ul[\s\S]*<\/ul>/i);
-      const cleanHTML = match ? match[0] : responseText.trim();
-
+      const responseText = await generateExperienceBullets({
+        positionTitle: experience.title,
+        companyName: experience.companyName,
+        targetJob: resumeInfo?.targetJob,
+        existingSummary: experience.workSummary,
+      });
+      const cleanHTML = sanitizeHtml(responseText);
       setValue(cleanHTML);
       onRichTextEditorChange(cleanHTML);
-
       toast.success("AI generated experience bullets!");
-
     } catch (err) {
-
       console.error("AI Error:", err);
-      toast.error("AI generation failed.");
-
+      toast.error(err?.message || "AI generation failed.");
     } finally {
-
       setLoading(false);
-
     }
   };
 
   return (
     <div>
-
-      {/* Header */}
       <div className="flex justify-between items-center my-2">
-
-        <label className="text-xs font-medium text-brand-muted">
+        <label className="text-xs font-medium text-muted-foreground">
           Summary
         </label>
-
         <Button
           variant="outline"
           size="sm"
@@ -97,7 +71,6 @@ function RichTextEditor({ onRichTextEditorChange, index, defaultValue = "" }) {
           disabled={loading}
           className="flex gap-2"
         >
-
           {loading ? (
             <>
               <LoaderCircle className="animate-spin h-4 w-4" />
@@ -109,52 +82,33 @@ function RichTextEditor({ onRichTextEditorChange, index, defaultValue = "" }) {
               Generate with AI
             </>
           )}
-
         </Button>
-
       </div>
 
-      {/* Editor */}
-      <div className="border border-brand-border rounded-md overflow-hidden bg-white">
-
+      <div className="border border-border rounded-md overflow-hidden bg-white">
         <EditorProvider>
-
           <Editor
             value={value}
             onChange={(e) => {
-
-              const html = e.target.value;
-
+              const html = sanitizeHtml(e.target.value);
               setValue(html);
               onRichTextEditorChange(html);
-
             }}
           >
-
             <Toolbar>
-
               <BtnBold />
               <BtnItalic />
               <BtnUnderline />
               <BtnStrikeThrough />
-
               <Separator />
-
               <BtnNumberedList />
               <BtnBulletList />
-
               <Separator />
-
               <BtnLink />
-
             </Toolbar>
-
           </Editor>
-
         </EditorProvider>
-
       </div>
-
     </div>
   );
 }

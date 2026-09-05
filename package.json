@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.53.4",
-    "@clerk/react": "^6.1.0",
     "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -23,7 +22,6 @@
     "clsx": "^2.1.1",
     "convex": "^1.28.0",
     "lucide-react": "^0.552.0",
-    "next-themes": "^0.4.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.5",

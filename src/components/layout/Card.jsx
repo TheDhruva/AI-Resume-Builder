@@ -10,10 +10,10 @@ export default function Card({
     <div
       className={`
         bg-white
-        border border-brand-border
-        rounded-xl
+        border border-border
+        rounded-lg
         shadow-sm
-        transition-all
+        transition-shadow
         ${hover ? "hover:shadow-md" : ""}
         ${className}
       `}

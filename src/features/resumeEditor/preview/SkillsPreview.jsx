@@ -1,21 +1,11 @@
 import React from "react";
 
 function SkillsPreview({ resumeInfo }) {
-  // Safe theme color
-  const themeColor =
-    resumeInfo?.resumeInfo?.themeColor ||
-    resumeInfo?.themeColor ||
-    "#000000";
-
-  // Safe skills extraction (supports both formats)
-  const skills =
-    resumeInfo?.resumeInfo?.skills ||
-    resumeInfo?.skills ||
-    [];
+  const themeColor = resumeInfo?.themeColor || "#4F46E5";
+  const skills = resumeInfo?.skills || [];
 
   return (
     <div className="my-6">
-      {/* Header */}
       <h2
         className="font-bold text-lg mb-2 uppercase"
         style={{ color: themeColor }}
@@ -24,7 +14,6 @@ function SkillsPreview({ resumeInfo }) {
       </h2>
       <hr style={{ borderColor: themeColor }} />
 
-      {/* List */}
       <div className="mt-3 space-y-2">
         {skills.length > 0 ? (
           skills.map((skill, index) => (
@@ -40,9 +29,7 @@ function SkillsPreview({ resumeInfo }) {
             </div>
           ))
         ) : (
-          <p className="text-xs text-gray-500 mt-3">
-            No skills added yet.
-          </p>
+          <p className="text-xs text-brand-muted mt-3">No skills added yet.</p>
         )}
       </div>
     </div>

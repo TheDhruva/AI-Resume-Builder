@@ -1,23 +1,46 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { ResumeInfoContext } from "@/features/resumeEditor/ResumeInfoContext";
-import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { useParams } from "react-router-dom";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react"; // ✅ correct loader import
 
-function PersonalDetail({ enabledNext }) {
+function Field({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  className = "",
+  required = false,
+  placeholder = "",
+}) {
+  return (
+    <div className={className}>
+      <label
+        htmlFor={name}
+        className="text-sm font-medium text-foreground block mb-1.5"
+      >
+        {label}
+        {required ? <span className="text-destructive"> *</span> : null}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value || ""}
+        onChange={onChange}
+        className="field-input"
+        autoComplete="on"
+        required={required}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+}
+
+export default function PersonalDetail() {
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
-  const updateResumeInfo = useMutation(api.resumes.updateResumeInfo);
-  const { id: resumeId } = useParams();
-  const [loading, setLoading] = useState(false);
+  const details = resumeInfo?.personalDetails || {};
 
-  // ✅ Handle input updates locally for live preview
-  const handleInputChange = (e) => {
-    enabledNext && enabledNext(false);
+  const onChange = (e) => {
     const { name, value } = e.target;
-
     setResumeInfo((prev) => ({
       ...prev,
       personalDetails: {
@@ -27,125 +50,94 @@ function PersonalDetail({ enabledNext }) {
     }));
   };
 
-  // ✅ Save to Convex Database
-  const onSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await updateResumeInfo({
-        resumeId,
-        field: "resumeInfo",
-        value: {
-          ...resumeInfo.resumeInfo,
-          personalDetails: resumeInfo.personalDetails,
-        },
-      });
-
-      console.log("✅ Saved to Convex:", resumeInfo.personalDetails);
-      toast.success("Personal details saved!");
-      enabledNext && enabledNext(true);
-    } catch (err) {
-      console.error("❌ Error saving:", err);
-      toast.error("Failed to save.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="p-6 shadow-sm rounded-xl border-t-4 border-primary border-[1px] border-x-gray-200 border-b-gray-200 bg-white mt-4">
-      <h2 className="font-bold text-xl mb-1 text-gray-900">Personal Details</h2>
-      <p className="text-muted-foreground text-sm mb-6">
-        Enter your basic information below.
+    <div className="editor-panel">
+      <h2 className="editor-panel-title">Basics</h2>
+      <p className="editor-panel-desc">
+        Contact details appear at the top of your resume. Location can be city
+        or region — no full street address required.
       </p>
 
-      <form onSubmit={onSave}>
-        <div className="grid grid-cols-2 mt-5 gap-4">
-          <InputField
-            label="First Name"
-            name="firstName"
-            defaultValue={resumeInfo?.personalDetails?.firstName || ""}
-            value={resumeInfo?.personalDetails?.firstName || ""}
-            onChange={handleInputChange}
-          />
-          <InputField
-            label="Last Name"
-            name="lastName"
-            defaultValue={resumeInfo?.personalDetails?.lastName || ""}
-            value={resumeInfo?.personalDetails?.lastName || ""}
-            onChange={handleInputChange}
-          />
-          <InputField
-            label="Job Title"
-            name="jobTitle"
-            defaultValue={resumeInfo?.personalDetails?.jobTitle || ""}
-            value={resumeInfo?.personalDetails?.jobTitle || ""}
-            className="col-span-2"
-            onChange={handleInputChange}
-          />
-          <InputField
-            label="Email"
-            name="email"
-            defaultValue={resumeInfo?.personalDetails?.email || ""}
-            type="email"
-            value={resumeInfo?.personalDetails?.email || ""}
-            onChange={handleInputChange}
-          />
-          <InputField
-            label="Phone"
-            name="phone"
-            defaultValue={resumeInfo?.personalDetails?.phone || ""}
-            type="tel"
-            value={resumeInfo?.personalDetails?.phone || ""}
-            onChange={handleInputChange}
-          />
-          <InputField
-            label="Address"
-            name="address"
-            defaultValue={resumeInfo?.personalDetails?.address || ""}
-            className="col-span-2"
-            value={resumeInfo?.personalDetails?.address || ""}
-            onChange={handleInputChange}
-          />
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+        <Field
+          label="First name"
+          name="firstName"
+          value={details.firstName}
+          onChange={onChange}
+          required
+        />
+        <Field
+          label="Last name"
+          name="lastName"
+          value={details.lastName}
+          onChange={onChange}
+          required
+        />
+        <Field
+          label="Headline / job title"
+          name="jobTitle"
+          value={details.jobTitle}
+          onChange={onChange}
+          className="sm:col-span-2"
+          placeholder="Software Engineer"
+        />
+        <Field
+          label="Email"
+          name="email"
+          type="email"
+          value={details.email}
+          onChange={onChange}
+          required
+        />
+        <Field
+          label="Phone"
+          name="phone"
+          type="tel"
+          value={details.phone}
+          onChange={onChange}
+        />
+        <Field
+          label="Location"
+          name="address"
+          value={details.address}
+          onChange={onChange}
+          className="sm:col-span-2"
+          placeholder="City, Country"
+        />
+      </div>
 
-        <div className="mt-5 flex justify-end">
-          <Button type="submit" disabled={loading}>
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="animate-spin" size={18} />
-                Saving...
-              </div>
-            ) : (
-              "Save"
-            )}
-          </Button>
+      <div className="mt-8 pt-6 border-t border-border">
+        <h3 className="text-sm font-semibold text-foreground">Online presence</h3>
+        <p className="text-xs text-muted-foreground mt-1 mb-4">
+          Optional links for recruiters (shown on the resume when filled).
+        </p>
+        <div className="grid grid-cols-1 gap-4">
+          <Field
+            label="LinkedIn"
+            name="linkedin"
+            type="url"
+            value={details.linkedin}
+            onChange={onChange}
+            placeholder="https://linkedin.com/in/..."
+          />
+          <Field
+            label="GitHub"
+            name="github"
+            type="url"
+            value={details.github}
+            onChange={onChange}
+            placeholder="https://github.com/..."
+          />
+          <Field
+            label="Portfolio"
+            name="portfolio"
+            type="url"
+            value={details.portfolio}
+            onChange={onChange}
+            placeholder="https://..."
+          />
         </div>
-      </form>
+      </div>
     </div>
   );
 }
-
-// 🔹 Reusable input field
-const InputField = ({
-  label,
-  name,
-  value,
-  onChange,
-  type = "text",
-  className = "",
-}) => (
-  <div className={className}>
-    <label className="text-sm font-medium text-gray-700 block mb-1.5">{label}</label>
-    <input
-      name={name}
-      type={type}
-      required
-      value={value}
-      onChange={onChange}
-      className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-    />
-  </div>
-);
-
-export default PersonalDetail;
