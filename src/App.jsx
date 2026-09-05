@@ -79,7 +79,7 @@ function ConvexAuthStuck() {
             On the <strong>production</strong> Convex deployment:{" "}
             <code>
               npx convex env set CLERK_JWT_ISSUER_DOMAIN
-              https://mighty-narwhal-24.clerk.accounts.dev --prod
+              https://clerk.ai-resume-builder-au.vercel.app --prod
             </code>
           </li>
           <li>
