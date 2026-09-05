@@ -1,4 +1,4 @@
-import { StrictMode, useCallback } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 
@@ -17,30 +17,10 @@ import SignInPage from "./features/auth/SignInPage.jsx";
 import ViewResume from "./features/dashboard/view/ViewResume.jsx";
 import PublicResume from "./features/dashboard/view/PublicResume.jsx";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
+const CONVEX_URL = (import.meta.env.VITE_CONVEX_URL || "").trim();
 const PUBLISHABLE_KEY = (import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "").trim();
 
-/** Clerk JWT template name for Convex — must match dashboard template name. */
-const CLERK_JWT_TEMPLATE =
-  (import.meta.env.VITE_CLERK_JWT_TEMPLATE || "convex").trim();
-
-function useAuthWithConvexJwt() {
-  const auth = useAuth();
-  const getToken = useCallback(
-    async (options) => {
-      return auth.getToken({
-        ...options,
-        template: options?.template || CLERK_JWT_TEMPLATE,
-      });
-    },
-    [auth]
-  );
-
-  return {
-    ...auth,
-    getToken,
-  };
-}
+const convex = CONVEX_URL ? new ConvexReactClient(CONVEX_URL) : null;
 
 function PublicLayout() {
   return (
@@ -73,31 +53,88 @@ const router = createBrowserRouter([
   },
 ]);
 
-function EnvError() {
+function EnvError({ title, children }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-bg font-sans px-4">
       <div className="bg-white rounded-xl p-8 border border-brand-border text-center max-w-lg">
-        <h1 className="text-2xl font-bold text-error">
-          Missing Environment Variable
-        </h1>
-        <p className="text-brand-muted mt-3">
-          Add <b>VITE_CLERK_PUBLISHABLE_KEY</b> to your <code>.env.local</code>
-        </p>
+        <h1 className="text-2xl font-bold text-error">{title}</h1>
+        <div className="text-brand-muted mt-3 text-sm leading-relaxed text-left">
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 
+function Root() {
+  if (!PUBLISHABLE_KEY) {
+    return (
+      <EnvError title="Missing Clerk key">
+        <p>
+          Set <code>VITE_CLERK_PUBLISHABLE_KEY</code> in Vercel /{" "}
+          <code>.env.local</code>, then redeploy.
+        </p>
+      </EnvError>
+    );
+  }
+
+  if (!convex) {
+    return (
+      <EnvError title="Missing Convex URL">
+        <p>
+          Set <code>VITE_CONVEX_URL</code> to your{" "}
+          <strong>cloud</strong> deployment URL (not localhost), then redeploy.
+        </p>
+      </EnvError>
+    );
+  }
+
+  // Detect common Vercel misconfig: localhost baked into the production build
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1" &&
+    /localhost|127\.0\.0\.1/.test(CONVEX_URL)
+  ) {
+    return (
+      <EnvError title="Wrong Convex URL for production">
+        <p className="mb-2">
+          This site is calling <code>{CONVEX_URL}</code>, which only works on
+          your computer.
+        </p>
+        <p>
+          In Vercel → Project → Settings → Environment Variables, set{" "}
+          <code>VITE_CONVEX_URL</code> to your Convex{" "}
+          <strong>production</strong> URL from the Convex dashboard, then{" "}
+          <strong>Redeploy</strong>.
+        </p>
+      </EnvError>
+    );
+  }
+
+  return (
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <ClerkConvexBridge convex={convex} />
+    </ClerkProvider>
+  );
+}
+
+/** Remount Convex auth when Clerk session changes so tokens re-bind cleanly. */
+function ClerkConvexBridge({ convex }) {
+  const { sessionId } = useAuth();
+  return (
+    <ConvexProviderWithClerk
+      key={sessionId ?? "signed-out"}
+      client={convex}
+      useAuth={useAuth}
+    >
+      <RouterProvider router={router} />
+    </ConvexProviderWithClerk>
+  );
+}
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {PUBLISHABLE_KEY ? (
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-        <ConvexProviderWithClerk client={convex} useAuth={useAuthWithConvexJwt}>
-          <RouterProvider router={router} />
-        </ConvexProviderWithClerk>
-      </ClerkProvider>
-    ) : (
-      <EnvError />
-    )}
+    <Root />
   </StrictMode>
 );

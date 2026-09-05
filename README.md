@@ -68,7 +68,8 @@ Do **not** put `GOOGLE_AI_API_KEY` in `VITE_*`.
 
 4. **Clerk dashboard**
    - Add your Vercel domain(s) under Allowed origins / redirect URLs
-   - JWT template name must be exactly `convex`
+   - Enable **Integrations → Convex** (or JWT template named exactly `convex` with `"aud": "convex"`)
+   - If signed-in users spin forever on production, the usual causes are: localhost `VITE_CONVEX_URL`, missing `--prod` `CLERK_JWT_ISSUER_DOMAIN`, or Convex integration only enabled on the Clerk *Development* instance
 
 5. **Smoke test**
    - Landing → Continue as guest → edit → print

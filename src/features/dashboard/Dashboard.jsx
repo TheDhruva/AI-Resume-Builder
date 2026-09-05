@@ -30,7 +30,8 @@ function Dashboard() {
 
   const refreshGuest = () => setGuestTick((n) => n + 1);
 
-  if (isSignedIn && isLoading) {
+  // App shell already gates Convex auth; avoid a second endless spinner here.
+  if (isSignedIn && isLoading && !isAuthenticated) {
     return (
       <PageContainer>
         <div className="text-center py-20 text-muted-foreground">
